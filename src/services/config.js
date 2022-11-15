@@ -1,11 +1,13 @@
+// Your web app's Firebase configuration
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
-  databaseURL: import.meta.env.VITE_FIREBASE_DB_URL,
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MSG_SENDER_ID,
-  appId: import.meta.env.VITE_FIREBASE_APP_ID
+  apiKey: "AIzaSyBQDgavezztcmFwxnxQpLsdZVP-_f9PpDg",
+  authDomain: "kitchenonthecorner-bfc5c.firebaseapp.com",
+  projectId: "kitchenonthecorner-bfc5c",
+  storageBucket: "kitchenonthecorner-bfc5c.appspot.com",
+  messagingSenderId: "588266786178",
+  appId: "1:588266786178:web:d99930178b349be31ad39b",
+  measurementId: "G-KM0Y1KVYKH"
 };
 
 export default firebaseConfig;
