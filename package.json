@@ -54,6 +54,7 @@
   },
   "dependencies": {
     "@ant-design/icons": "^4.6.2",
+    "@silevis/reactgrid": "^4.0.4",
     "firebase": "^8.4.3",
     "formik": "^2.2.6",
     "history": "^4.10.0",
@@ -61,7 +62,9 @@
     "normalize.css": "^8.0.1",
     "prop-types": "^15.7.2",
     "react": "^17.0.2",
+    "react-bootstrap": "^2.6.0",
     "react-compound-slider": "^3.3.1",
+    "react-datasheet-grid": "^4.8.1",
     "react-dom": "^17.0.2",
     "react-loading-skeleton": "^2.2.0",
     "react-modal": "^3.13.1",
