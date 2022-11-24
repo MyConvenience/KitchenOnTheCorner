@@ -49,7 +49,17 @@ input[type=date] {
   -webkit-appearance: textfield;
 }
 
-input[type=checkbox],
+input[type=checkbox] {
+  padding: 0;
+  height: initial;
+  width: initial;
+  margin-bottom: 0;
+  display: inline;
+  margin-right: 5px;
+  vertical-align: middle;
+  cursor: pointer;
+}
+
 input[type=radio] {
   padding: 0;
   height: initial;

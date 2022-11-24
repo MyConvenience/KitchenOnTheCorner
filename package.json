@@ -54,7 +54,6 @@
   },
   "dependencies": {
     "@ant-design/icons": "^4.6.2",
-    "@silevis/reactgrid": "^4.0.4",
     "firebase": "^8.4.3",
     "formik": "^2.2.6",
     "history": "^4.10.0",
