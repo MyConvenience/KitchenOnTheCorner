@@ -12,7 +12,7 @@ import { selectColumn } from '@/components/datasheet';
 import _ from 'lodash';
 import 'react-datasheet-grid/dist/style.css';
 import {Form, Button} from 'react-bootstrap';
-
+import slugify from 'slugify';
 
 const FormSchema = Yup.object().shape({
   name: Yup.string()
@@ -78,31 +78,16 @@ const ProductForm = ({ product, onSubmit, isLoading }) => {
     removeImage
   } = useFileHandler({ image: {}, imageCollection: product?.imageCollection || [] });
 
-  const onSubmitForm = (form) => {
-    const values = {
-      ...form,
-      quantity: 1,
-      // due to firebase function billing policy, let's add lowercase version
-      // of name here instead in firebase functions
-      name_lower: form.name.toLowerCase(),
-      dateAdded: new Date().getTime(),
-      image: imageFile?.image?.file || product.imageUrl,
-      imageCollection: imageFile.imageCollection
-    };
-    console.log(values);
-    return;
-
-    if (imageFile.image.file || product.imageUrl) {
-      onSubmit({
-        ...form,
-        quantity: 1,
-        // due to firebase function billing policy, let's add lowercase version
-        // of name here instead in firebase functions
-        name_lower: form.name.toLowerCase(),
+  const onSubmitForm = (formValues) => {
+    const imageCount = (imageFile.imageCollection || []).length;
+    if (imageCount > 0 || product.imageUrl) {
+      const values = {
+        id: slugify(formValues.name, {lower: true}),
+        ...formValues,
         dateAdded: new Date().getTime(),
-        image: imageFile?.image?.file || product.imageUrl,
         imageCollection: imageFile.imageCollection
-      });
+      };
+      onSubmit(values);
     } else {
       // eslint-disable-next-line no-alert
       alert('Product thumbnail image is required.');
@@ -147,14 +132,8 @@ const ProductForm = ({ product, onSubmit, isLoading }) => {
                 <>
                   {imageFile.imageCollection.length >= 1 && (
                     imageFile.imageCollection.map((image) => (
-                      <div
-                        className="product-form-collection-image"
-                        key={image.id}
-                      >
-                        <ImageLoader
-                          alt=""
-                          src={image.url}
-                        />
+                      <div className="product-form-collection-image" key={image.id}>
+                        <ImageLoader alt="" src={image.url}/>
                         <button
                           className="product-form-delete-image"
                           onClick={() => removeImage({ id: image.id, name: 'imageCollection' })}

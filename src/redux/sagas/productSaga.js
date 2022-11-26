@@ -67,30 +67,9 @@ function* productSaga({ type, payload }) {
       try {
         yield initRequest();
 
-        const { imageCollection } = payload;
-        const key = yield call(firebase.generateKey);
-        const downloadURL = yield call(firebase.storeImage, key, 'products', payload.image);
-        const image = { id: key, url: downloadURL };
-        let images = [];
-
-        if (imageCollection.length !== 0) {
-          const imageKeys = yield all(imageCollection.map(() => firebase.generateKey));
-          const imageUrls = yield all(imageCollection.map((img, i) => firebase.storeImage(imageKeys[i](), 'products', img.file)));
-          images = imageUrls.map((url, i) => ({
-            id: imageKeys[i](),
-            url
-          }));
-        }
-
-        const product = {
-          ...payload,
-          image: downloadURL,
-          imageCollection: [image, ...images]
-        };
-
-        yield call(firebase.addProduct, key, product);
+        const { imageCollection, ...product } = payload;
+        yield call(firebase.addNewProduct, product, imageCollection);
         yield put(addProductSuccess({
-          id: key,
           ...product
         }));
         yield handleAction(ADMIN_PRODUCTS, 'Item succesfully added', 'success');

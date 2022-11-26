@@ -19,6 +19,11 @@ service cloud.firestore {
     	allow create: if request.auth.uid != null;
     }
     
+    match /images/{imageId} {
+      allow create,update,delete: if request.auth.uid != null;
+    	allow read: if true;
+    }
+
     match /products/{productId} {
       allow create,update,delete: if request.auth.uid != null;
     	allow read: if true;

@@ -1,16 +1,22 @@
-import app from "firebase/app";
-import "firebase/auth";
-import "firebase/firestore";
-import "firebase/storage";
+import { initializeApp } from 'firebase/app';
+import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { getAuth } from 'firebase/auth';
+import { getFirestore, collection, doc, getDoc, setDoc } from 'firebase/firestore';
 import firebaseConfig from "./config";
+import slugify from 'slugify';
+import { FileImageFilled } from '@ant-design/icons';
+import { all } from 'redux-saga/effects';
 
 class Firebase {
   constructor() {
-    app.initializeApp(firebaseConfig);
+    const app = initializeApp(firebaseConfig);
 
-    this.storage = app.storage();
-    this.db = app.firestore();
-    this.auth = app.auth();
+    this.storage = getStorage(app);
+    this.auth = getAuth(app);
+    this.db = getFirestore(app);
+
+    // this.ravenDb = new DocumentStore('https://a.myc-dev.totable.ravendb.cloud', 'KitchenOnTheCorner');
+    // this.ravenDb.initialize();
   }
 
   // AUTH ACTIONS ------------
@@ -34,9 +40,9 @@ class Firebase {
 
   passwordReset = (email) => this.auth.sendPasswordResetEmail(email);
 
-  addUser = (id, user) => this.db.collection("users").doc(id).set(user);
+  addUser = (id, user) => setDoc(doc(collection(this.db, "users"), id), user);
 
-  getUser = (id) => this.db.collection("users").doc(id).get();
+  getUser = (id) => getDoc(doc(collection(this.db, "users"), id));
 
   passwordUpdate = (password) => this.auth.currentUser.updatePassword(password);
 
@@ -243,17 +249,54 @@ class Firebase {
       .where("isRecommended", "==", true)
       .limit(itemsCount)
       .get();
+  
+  addProductImage = async (productId, image) => {
+    const nameParts = image.file.name.split('.');
+    const imagePath = `${slugify(nameParts[0], {lower:true})}.${nameParts[1]}`;
+    const imageRef = ref(this.storage, `products/${productId}/images/${imagePath}`);
 
-  addProduct = (id, product) =>
-    this.db.collection("products").doc(id).set(product);
+    const snapshot = await uploadBytes(imageRef, image['rawBody']);
+    return getDownloadURL(imageRef);
+  }
+  
+  addNewProduct = async (product, imageCollection) => {
+    product.images = await Promise.all(imageCollection.map(img => this.addProductImage(product.id, img)));
+    
+    debugger;
+    console.dir(product);
+    setDoc(doc(collection(this.db, "products"), product.id), product);
+  } 
 
-  generateKey = () => this.db.collection("products").doc().id;
+  addNewProductSaved = (product, imageCollection) => {
+    var reader = new FileReader();
+    let images = [];
 
-  storeImage = async (id, folder, imageFile) => {
-    const snapshot = await this.storage.ref(folder).child(id).put(imageFile);
+    reader.onload = function() {      
+      const base64 = this.result;
+      const stripped = base64.replace("data:", "").replace(/^.+,/, "");
+      console.log(stripped);
+      images.push(stripped);
+    };
+
+    debugger;
+    for (var i = 0; i < imageCollection.length; i++)
+      reader.readAsDataURL(imageCollection[i].file);
+
+    product.images = images;
+    setDoc(doc(collection(this.db, "products"), product.id), product);
+  } 
+
+  storeImage = async (image) => {
+    const nameParts = image.file.name.split('.');
+    const imagePath = `images/${slugify(nameParts[0], {lower:true})}.${nameParts[1]}`;
+    const target = ref(this.storage, imagePath);
+    const snapshot = await uploadBytes(target, image);
     const downloadURL = await snapshot.ref.getDownloadURL();
-
-    return downloadURL;
+    
+    return {
+      id: snapshot.id,
+      url: downloadURL,
+    }  
   };
 
   deleteImage = (id) => this.storage.ref("products").child(id).delete();
@@ -265,5 +308,4 @@ class Firebase {
 }
 
 const firebaseInstance = new Firebase();
-
 export default firebaseInstance;
