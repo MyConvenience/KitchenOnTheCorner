@@ -42,30 +42,23 @@ const ProductItem = ({ product }) => {
       >
         <div className="grid grid-count-6">
           <div className="grid-col item-img-wrapper">
-            {product.image ? (
-              <ImageLoader
-                alt={product.name}
-                className="item-img"
-                src={product.image}
-              />
-            ) : <Skeleton width={50} height={30} />}
+            {(product.images || []).length > 0 
+            ? <img alt={product.name} className="item-img" src={product.images[0]}/>
+            : <Skeleton width={50} height={30} />}              
           </div>
           <div className="grid-col">
             <span className="text-overflow-ellipsis">{product.name || <Skeleton width={50} />}</span>
           </div>
           <div className="grid-col">
-            <span>{product.brand || <Skeleton width={50} />}</span>
+            <span>{(product.keywords || []).join(',')}</span>
           </div>
           <div className="grid-col">
-            <span>{product.price ? displayMoney(product.price) : <Skeleton width={30} />}</span>
+            <span>{(product.sizes || []).map(kv => `${kv.size}: ${displayMoney(kv.price)}`).join(' ')}</span>
           </div>
           <div className="grid-col">
             <span>
               {product.dateAdded ? displayDate(product.dateAdded) : <Skeleton width={30} />}
             </span>
-          </div>
-          <div className="grid-col">
-            <span>{product.maxQuantity || <Skeleton width={20} />}</span>
           </div>
         </div>
         {product.id && (
@@ -114,19 +107,14 @@ ProductItem.propTypes = {
   product: PropType.shape({
     id: PropType.string,
     name: PropType.string,
-    brand: PropType.string,
-    price: PropType.number,
-    maxQuantity: PropType.number,
+    sizes: PropType.arrayOf(PropType.shape({ size: PropType.string, price: PropType.number})),
     description: PropType.string,
     keywords: PropType.arrayOf(PropType.string),
-    imageCollection: PropType.arrayOf(PropType.object),
-    sizes: PropType.arrayOf(PropType.string),
-    image: PropType.string,
-    imageUrl: PropType.string,
+    options: PropType.arrayOf(PropType.shape({name: PropType.string, label: PropType.string, price: PropType.number, markup: PropType.number})),
+    images: PropType.arrayOf(PropType.string),
     isFeatured: PropType.bool,
     isRecommended: PropType.bool,
     dateAdded: PropType.number,
-    availableColors: PropType.arrayOf(PropType.string)
   }).isRequired
 };
 

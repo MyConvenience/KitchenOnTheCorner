@@ -1,7 +1,7 @@
 import { initializeApp } from 'firebase/app';
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { getAuth } from 'firebase/auth';
-import { getFirestore, collection, doc, getDoc, setDoc } from 'firebase/firestore';
+import { getFirestore, collection, doc, getDoc, getDocs, setDoc, query, where, getCountFromServer, limit, startAfter, orderBy  } from 'firebase/firestore';
 import firebaseConfig from "./config";
 import slugify from 'slugify';
 import { FileImageFilled } from '@ant-design/icons';
@@ -108,28 +108,27 @@ class Firebase {
 
   // // PRODUCT ACTIONS --------------
 
-  getSingleProduct = (id) => this.db.collection("products").doc(id).get();
+  getSingleProduct = async (id) => {
+    const docRef = doc(this.db, "products", id);
+    const docSnap = await getDoc(docRef);
+    return docSnap.doc;
+  }
 
   getProducts = (lastRefKey) => {
     let didTimeout = false;
-
+    const productsRef = collection(this.db, "products");
+  
     return new Promise((resolve, reject) => {
       (async () => {
         if (lastRefKey) {
           try {
-            const query = this.db
-              .collection("products")
-              .orderBy(app.firestore.FieldPath.documentId())
-              .startAfter(lastRefKey)
-              .limit(12);
-
-            const snapshot = await query.get();
+            const query = query(productsRef, startAfter(lastRefKey), orderBy("id"), limit(12));
+            const snapshot = await query.getDocs();
             const products = [];
             snapshot.forEach((doc) =>
               products.push({ id: doc.id, ...doc.data() })
             );
             const lastKey = snapshot.docs[snapshot.docs.length - 1];
-
             resolve({ products, lastKey });
           } catch (e) {
             reject(e?.message || ":( Failed to fetch products.");
@@ -141,22 +140,18 @@ class Firebase {
           }, 15000);
 
           try {
-            const totalQuery = await this.db.collection("products").get();
-            const total = totalQuery.docs.length;
-            const query = this.db
-              .collection("products")
-              .orderBy(app.firestore.FieldPath.documentId())
-              .limit(12);
-            const snapshot = await query.get();
+            const countSnapshot = await getCountFromServer(productsRef);
+            const total =  countSnapshot.data().count;
+
+            const docQuery = query(productsRef, orderBy("id"), limit(12));
+            const snapshot = await getDocs(docQuery);
 
             clearTimeout(timeout);
-            if (!didTimeout) {
-              const products = [];
-              snapshot.forEach((doc) =>
-                products.push({ id: doc.id, ...doc.data() })
-              );
-              const lastKey = snapshot.docs[snapshot.docs.length - 1];
 
+            if (!didTimeout) {
+              const products = snapshot.docs.map(doc => doc.data());
+              const lastKey = snapshot.docs[snapshot.docs.length - 1];
+              debugger;
               resolve({ products, lastKey, total });
             }
           } catch (e) {
@@ -173,7 +168,7 @@ class Firebase {
 
     return new Promise((resolve, reject) => {
       (async () => {
-        const productsRef = this.db.collection("products");
+        const productsRef = collection(this.db, "products");
 
         const timeout = setTimeout(() => {
           didTimeout = true;
@@ -236,68 +231,73 @@ class Firebase {
     });
   };
 
-  getFeaturedProducts = (itemsCount = 12) =>
-    this.db
-      .collection("products")
-      .where("isFeatured", "==", true)
-      .limit(itemsCount)
-      .get();
-
-  getRecommendedProducts = (itemsCount = 12) =>
-    this.db
-      .collection("products")
-      .where("isRecommended", "==", true)
-      .limit(itemsCount)
-      .get();
+  getFeaturedProducts = async (itemsCount = 12) => {
+    try
+    {      
+      const productsRef = collection(this.db, "products");
+      const fq = query(productsRef,
+        where("isFeatured", "==", true),
+        limit(itemsCount));
   
-  addProductImage = async (productId, image) => {
+      const snapshot = await getDocs(fq);
+      let results = [];
+      snapshot.forEach((doc) => {
+        // results.push({id: doc.id, data: doc.data()});
+        results.push(doc.data());
+      });
+      return results;
+    }
+    catch (err) {
+      debugger;
+      console.error(err);
+    }
+  }
+
+
+  getRecommendedProducts = async (itemsCount = 12) => {
+    try
+    {      
+      const productsRef = collection(this.db, "products");
+      const fq = query(productsRef,
+        where("isRecommended", "==", true),
+        limit(itemsCount));
+  
+      const snapshot = await getDocs(fq);
+      let results = [];
+      snapshot.forEach((doc) => {
+        // results.push({id: doc.id, data: doc.data()});
+        results.push(doc.data());
+      });
+      return results;
+    }
+    catch (err) {
+      debugger;
+      console.error(err);
+    }
+  }
+  
+  addProductImage = async (product, image ) => {
     const nameParts = image.file.name.split('.');
     const imagePath = `${slugify(nameParts[0], {lower:true})}.${nameParts[1]}`;
-    const imageRef = ref(this.storage, `products/${productId}/images/${imagePath}`);
+    const imageRef = ref(this.storage, `products/${product.id}/images/${imagePath}`);
 
-    const snapshot = await uploadBytes(imageRef, image['rawBody']);
-    return getDownloadURL(imageRef);
+    const snapshot = await uploadBytes(imageRef, image.file, {contentType: image.file.type});
+    const url = await getDownloadURL(snapshot.ref);
+    return url;
   }
   
   addNewProduct = async (product, imageCollection) => {
-    product.images = await Promise.all(imageCollection.map(img => this.addProductImage(product.id, img)));
-    
-    debugger;
+    let imageRefs = [];
+
+    imageCollection.forEach(async image => {
+      const url = await this.addProductImage(product, image);
+      imageRefs.push(url);
+    });
+    product.images = imageRefs;
+    console.log('saving product...');
     console.dir(product);
     setDoc(doc(collection(this.db, "products"), product.id), product);
   } 
-
-  addNewProductSaved = (product, imageCollection) => {
-    var reader = new FileReader();
-    let images = [];
-
-    reader.onload = function() {      
-      const base64 = this.result;
-      const stripped = base64.replace("data:", "").replace(/^.+,/, "");
-      console.log(stripped);
-      images.push(stripped);
-    };
-
-    debugger;
-    for (var i = 0; i < imageCollection.length; i++)
-      reader.readAsDataURL(imageCollection[i].file);
-
-    product.images = images;
-    setDoc(doc(collection(this.db, "products"), product.id), product);
-  } 
-
-  storeImage = async (image) => {
-    const nameParts = image.file.name.split('.');
-    const imagePath = `images/${slugify(nameParts[0], {lower:true})}.${nameParts[1]}`;
-    const target = ref(this.storage, imagePath);
-    const snapshot = await uploadBytes(target, image);
-    const downloadURL = await snapshot.ref.getDownloadURL();
-    
-    return {
-      id: snapshot.id,
-      url: downloadURL,
-    }  
-  };
 
   deleteImage = (id) => this.storage.ref("products").child(id).delete();
 

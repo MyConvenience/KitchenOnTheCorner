@@ -11,22 +11,19 @@ const ProductFeatured = ({ product }) => {
 
     history.push(`/product/${product.id}`);
   };
-
+  
   return (
     <SkeletonTheme color="#e1e1e1" highlightColor="#f2f2f2">
       <div className="product-display" onClick={onClickItem} role="presentation">
         <div className="product-display-img">
-          {product.image ? (
-            <ImageLoader
-              className="product-card-img"
-              src={product.image}
-            />
+          {(product.images || []).length > 0 ? (
+            <img alt={product.name} className="product-card-img" src={product.images[0]}/>            
           ) : <Skeleton width="100%" height="100%" />}
         </div>
         <div className="product-display-details">
           <h2>{product.name || <Skeleton width={80} />}</h2>
           <p className="text-subtle text-italic">
-            {product.brand || <Skeleton width={40} />}
+            {(product.sizes || []).length > 0 ? product.sizes[0].size : <Skeleton width={40} />}
           </p>
         </div>
       </div>
@@ -36,10 +33,10 @@ const ProductFeatured = ({ product }) => {
 
 ProductFeatured.propTypes = {
   product: PropType.shape({
-    image: PropType.string,
+    images: PropType.array,
     name: PropType.string,
-    id: PropType.string,
-    brand: PropType.string
+    description: PropType.string,
+    id: PropType.string
   }).isRequired
 };
 

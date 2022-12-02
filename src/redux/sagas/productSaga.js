@@ -83,7 +83,7 @@ function* productSaga({ type, payload }) {
     case EDIT_PRODUCT: {
       try {
         yield initRequest();
-
+        debugger;
         const { image, imageCollection } = payload.updates;
         let newUpdates = { ...payload.updates };
 

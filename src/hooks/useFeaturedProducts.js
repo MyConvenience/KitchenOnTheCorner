@@ -13,20 +13,16 @@ const useFeaturedProducts = (itemsCount) => {
       setLoading(true);
       setError('');
 
-      const docs = await firebase.getFeaturedProducts(itemsCount);
+      const items = await firebase.getFeaturedProducts(itemsCount);
+      console.dir(items);
 
-      if (docs.empty) {
+      if (items.empty) {
         if (didMount) {
           setError('No featured products found.');
           setLoading(false);
         }
       } else {
         const items = [];
-
-        docs.forEach((snap) => {
-          const data = snap.data();
-          items.push({ id: snap.ref.id, ...data });
-        });
 
         if (didMount) {
           setFeaturedProducts(items);
