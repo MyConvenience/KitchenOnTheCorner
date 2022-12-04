@@ -18,18 +18,12 @@ const useProduct = (id) => {
         if (!product || product.id !== id) {
           setLoading(true);
           const doc = await firebase.getSingleProduct(id);
-
-          if (doc.exists) {
-            const data = { ...doc.data(), id: doc.ref.id };
-
-            if (didMount) {
-              setProduct(data);
-              setLoading(false);
-            }
+          
+          setProduct(doc);
+          setLoading(false);
           } else {
             setError('Product not found.');
-          }
-        }
+          }                
       } catch (err) {
         if (didMount) {
           setLoading(false);

@@ -13,6 +13,7 @@ import _ from 'lodash';
 import 'react-datasheet-grid/dist/style.css';
 import {Form, Button} from 'react-bootstrap';
 import slugify from 'slugify';
+import { productSizes } from '@/helpers/utils';
 
 const FormSchema = Yup.object().shape({
   name: Yup.string()
@@ -56,15 +57,15 @@ const ProductForm = ({ product, onSubmit, isLoading }) => {
     { ...keyColumn('markup', floatColumn), title: 'Markup' }
   ];
 
+  const makeSizeSelection = (size) => {
+    return { value: size, label: productSizes[size]};
+  }
+
   const sizeColumns = [
     {
-      ...keyColumn('size', selectColumn({
-                            choices: [
-                              { value: 'regular', label: 'Regular' },
-                              { value: 'personal', label: 'Personal' },
-                              { value: 'medium', label: 'Medium' },
-                              { value: 'large', label: 'Large' },
-                            ],
+      ...keyColumn('size', selectColumn({ 
+                            choices: 
+                              Object.keys(productSizes).map(makeSizeSelection)
                           })
         ),
     title: 'Size'},

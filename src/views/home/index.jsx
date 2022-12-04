@@ -27,6 +27,8 @@ const Home = () => {
     error: errorRecommended
   } = useRecommendedProducts(6);
 
+  console.dir(featuredProducts);
+  
   return (
     <main className="content">
       <div className="home">
@@ -51,7 +53,7 @@ const Home = () => {
         </div>
         <div className="display">
           <div className="display-header">
-            <h1>Featured Products</h1>
+            <h1>{`Featured Products - ${(featuredProducts || []).length}`}</h1>
             <Link to={FEATURED_PRODUCTS}>See All</Link>
           </div>
           {(errorFeatured && !isLoadingFeatured) ? (
@@ -60,11 +62,10 @@ const Home = () => {
               action={fetchFeaturedProducts}
               buttonLabel="Try Again"
             />
-          ) : (
-            <ProductShowcaseGrid
-              products={featuredProducts}
-              skeletonCount={6}
-            />
+          ) : (<ProductShowcaseGrid
+            products={featuredProducts}
+            skeletonCount={6}
+          />
           )}
         </div>
         <div className="display">

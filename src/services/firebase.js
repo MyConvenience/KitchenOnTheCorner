@@ -111,7 +111,7 @@ class Firebase {
   getSingleProduct = async (id) => {
     const docRef = doc(this.db, "products", id);
     const docSnap = await getDoc(docRef);
-    return docSnap.doc;
+    return docSnap.data();
   }
 
   getProducts = (lastRefKey) => {
@@ -279,7 +279,7 @@ class Firebase {
   addProductImage = async (product, image ) => {
     const nameParts = image.file.name.split('.');
     const imagePath = `${slugify(nameParts[0], {lower:true})}.${nameParts[1]}`;
-    const imageRef = ref(this.storage, `products/${product.id}/images/${imagePath}`);
+    const imageRef = ref(this.storage, `images/${product.id}/${imagePath}`);
 
     const snapshot = await uploadBytes(imageRef, image.file, {contentType: image.file.type});
     const url = await getDownloadURL(snapshot.ref);

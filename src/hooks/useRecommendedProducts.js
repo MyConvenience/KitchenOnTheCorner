@@ -13,26 +13,10 @@ const useRecommendedProducts = (itemsCount) => {
       setLoading(true);
       setError('');
 
-      const docs = await firebase.getRecommendedProducts(itemsCount);
-
-      if (docs.empty) {
-        if (didMount) {
-          setError('No recommended products found.');
-          setLoading(false);
-        }
-      } else {
-        const items = [];
-
-        docs.forEach((snap) => {
-          const data = snap.data();
-          items.push({ id: snap.ref.id, ...data });
-        });
-
-        if (didMount) {
-          setRecommendedProducts(items);
-          setLoading(false);
-        }
-      }
+      const items = await firebase.getRecommendedProducts(itemsCount);
+      setRecommendedProducts(items);
+      setLoading(false);
+      
     } catch (e) {
       if (didMount) {
         setError('Failed to fetch recommended products');

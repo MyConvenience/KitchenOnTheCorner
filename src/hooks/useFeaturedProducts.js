@@ -15,20 +15,10 @@ const useFeaturedProducts = (itemsCount) => {
 
       const items = await firebase.getFeaturedProducts(itemsCount);
       console.dir(items);
+      
+      setFeaturedProducts(items);
+      setLoading(false);
 
-      if (items.empty) {
-        if (didMount) {
-          setError('No featured products found.');
-          setLoading(false);
-        }
-      } else {
-        const items = [];
-
-        if (didMount) {
-          setFeaturedProducts(items);
-          setLoading(false);
-        }
-      }
     } catch (e) {
       if (didMount) {
         setError('Failed to fetch featured products');

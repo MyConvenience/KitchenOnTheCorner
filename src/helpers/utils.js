@@ -15,6 +15,14 @@ export const displayDate = (timestamp) => {
   return `${monthNames[monthIndex]} ${day}, ${year}`;
 };
 
+export const productSizes = {
+  regular: 'Regular',
+  personal: 'Personal',
+  small: '16oz',
+  medium: '20oz',
+  large: '28oz'
+};
+
 export const displayMoney = (n) => {
   const format = new Intl.NumberFormat('en-US', {
     style: 'currency',

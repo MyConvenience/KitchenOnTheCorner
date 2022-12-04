@@ -1,5 +1,6 @@
 import { ImageLoader } from '@/components/common';
 import PropType from 'prop-types';
+import { displayMoney, productSizes } from '@/helpers/utils';
 import React from 'react';
 import Skeleton, { SkeletonTheme } from 'react-loading-skeleton';
 import { useHistory } from 'react-router-dom';
@@ -23,7 +24,7 @@ const ProductFeatured = ({ product }) => {
         <div className="product-display-details">
           <h2>{product.name || <Skeleton width={80} />}</h2>
           <p className="text-subtle text-italic">
-            {(product.sizes || []).length > 0 ? product.sizes[0].size : <Skeleton width={40} />}
+            {(product.sizes || []).map(s => `${productSizes[s.size]}: ${displayMoney(s.price)}`)}
           </p>
         </div>
       </div>
