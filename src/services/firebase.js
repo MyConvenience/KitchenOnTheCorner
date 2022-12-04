@@ -1,11 +1,12 @@
 import { initializeApp } from 'firebase/app';
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { getAuth } from 'firebase/auth';
+import { getAuth, signOut, signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth';
 import { getFirestore, collection, doc, getDoc, getDocs, setDoc, query, where, getCountFromServer, limit, startAfter, orderBy  } from 'firebase/firestore';
 import firebaseConfig from "./config";
 import slugify from 'slugify';
 import { FileImageFilled } from '@ant-design/icons';
 import { all } from 'redux-saga/effects';
+import _ from 'lodash';
 
 class Firebase {
   constructor() {
@@ -14,9 +15,6 @@ class Firebase {
     this.storage = getStorage(app);
     this.auth = getAuth(app);
     this.db = getFirestore(app);
-
-    // this.ravenDb = new DocumentStore('https://a.myc-dev.totable.ravendb.cloud', 'KitchenOnTheCorner');
-    // this.ravenDb.initialize();
   }
 
   // AUTH ACTIONS ------------
@@ -25,7 +23,7 @@ class Firebase {
     this.auth.createUserWithEmailAndPassword(email, password);
 
   signIn = (email, password) =>
-    this.auth.signInWithEmailAndPassword(email, password);
+    signInWithEmailAndPassword(this.auth, email, password);
 
   signInWithGoogle = () =>
     this.auth.signInWithPopup(new app.auth.GoogleAuthProvider());
@@ -36,7 +34,7 @@ class Firebase {
   signInWithGithub = () =>
     this.auth.signInWithPopup(new app.auth.GithubAuthProvider());
 
-  signOut = () => this.auth.signOut();
+  signOut = () => signOut(this.auth);
 
   passwordReset = (email) => this.auth.sendPasswordResetEmail(email);
 
@@ -168,34 +166,32 @@ class Firebase {
 
     return new Promise((resolve, reject) => {
       (async () => {
-        const productsRef = collection(this.db, "products");
-
         const timeout = setTimeout(() => {
           didTimeout = true;
           reject(new Error("Request timeout, please try again"));
         }, 15000);
 
         try {
-          debugger;
-          const searchedKeywordsRef = query(productsRef,
-            
-            where("keywords", "array-contains-any", searchKey.split(" ")),
-            limit(12));
+          const productsRef = collection(this.db, "products");
+          const keywordQuery = query(productsRef,            
+                where("keywords", "array-contains-any", searchKey.split(" ")),
+                orderBy("name_lower"),
+                orderBy("popularity", "desc"),
+                limit(12));
 
-            const searchedNameProducts = query(productsRef,
-              
+            const nameQuery = query(productsRef,                          
+              where("name_lower", ">=", searchKey),
               where("name_lower", "<=", `${searchKey}\uf8ff`),
+              orderBy("name_lower"),
+              orderBy("popularity", "desc"),
               limit(12));
-
             
-          const keywordsSnaps = await getDocs(searchedKeywordsRef);
-          const namedSnaps = await getDocs(searchedNameProducts);
-          
-          
+          const keywordsSnaps = await getDocs(keywordQuery);
+          const namedSnaps = await getDocs(nameQuery);
+                    
           clearTimeout(timeout);
+
           if (!didTimeout) {
-            const searchedNameProducts = [];
-            const searchedKeywordsProducts = [];
             let lastKey = null;          
             let products = [];
             
@@ -204,11 +200,12 @@ class Firebase {
                 products.push(doc.data());
               });
             }
-            keywordsSnaps.forEach((doc) => {
-              // results.push({id: doc.id, data: doc.data()});
+
+            namedSnaps.forEach((doc) => {
               products.push(doc.data());
             });
-            resolve({ products});
+
+            resolve({ products: _.uniqBy(products, 'id') });
           }
         } catch (e) {
           if (didTimeout) return;
@@ -224,6 +221,7 @@ class Firebase {
       const productsRef = collection(this.db, "products");
       const fq = query(productsRef,
         where("isFeatured", "==", true),
+        orderBy("popularity", "desc"),
         limit(itemsCount));
   
       const snapshot = await getDocs(fq);
@@ -247,6 +245,7 @@ class Firebase {
       const productsRef = collection(this.db, "products");
       const fq = query(productsRef,
         where("isRecommended", "==", true),
+        orderBy("popularity", "desc"),
         limit(itemsCount));
   
       const snapshot = await getDocs(fq);

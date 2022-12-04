@@ -39,16 +39,17 @@ const ProductForm = ({ product, onSubmit, isLoading }) => {
     options: product?.options || [],
     description: product?.description || '',
     keywords: product?.keywords || [],
+    crossSells: product?.crossSells || [],
     isFeatured: product?.isFeatured || false,
     isRecommended: product?.isRecommended || false,
     isTaxable : product?.isTaxable || false,
   };
 
-  const [ sizes, setSizes ] = useState([
+  const [ sizes, setSizes ] = useState(product?.sizes || [
     { size: 'regular', price: 0 }
   ]);
 
-  const [ options, setOptions ] = useState([]);
+  const [ options, setOptions ] = useState(product?.options || []);
 
   const optionColumns = [
     { ...keyColumn('name', textColumn), title: 'Name' },
@@ -172,6 +173,15 @@ const ProductForm = ({ product, onSubmit, isLoading }) => {
                     placeholder="Create/Select Keywords"
                     label="Keywords"
                   />
+                <CustomCreatableSelect
+                    defaultValue={values.crossSells.map((key) => ({ value: key, label: key }))}
+                    name="crossSells"
+                    iid="crossSells"
+                    isMulti
+                    disabled={isLoading}
+                    placeholder="Create/Select Cross Sell Keys"
+                    label="Cross Sells"
+                  />
                   <label><Field type="checkbox" name="isFeatured"/>Is Featured</label>
                   <label><Field type="checkbox" name="isRecommended"/>Is Recommended</label>
                   <label><Field type="checkbox" name="isTaxable"/>Taxable</label>
@@ -184,7 +194,8 @@ const ProductForm = ({ product, onSubmit, isLoading }) => {
               <legend>Options</legend>
               <DataSheetGrid value={options} onChange={setOptions} columns={optionColumns}/>
             </fieldset>
-            <Button variant="primary" onClick={() => onSubmitForm(_.merge({options: options, sizes: sizes}, values))}>
+            <Button variant="primary" onClick={() => onSubmitForm(
+                  _.merge({options: options, sizes: sizes, name_lower: values.name.toLower()}, values))}>
               Submit
             </Button>
           </Form>
@@ -200,10 +211,12 @@ ProductForm.propTypes = {
     name: PropType.string,
     description: PropType.string,
     keywords: PropType.arrayOf(PropType.string),
+    crossSell: PropType.arrayOf(PropType.string),
     imageCollection: PropType.arrayOf(PropType.object),
     image: PropType.string,
     imageUrl: PropType.string,
     isFeatured: PropType.bool,
+    popularity: PropType.number,
     isRecommended: PropType.bool,
     isTaxable: PropType.bool,
     sizes: PropType.arrayOf(PropType.shape({ name: PropType.string, price: PropType.number })),
