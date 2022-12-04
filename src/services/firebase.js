@@ -151,7 +151,7 @@ class Firebase {
             if (!didTimeout) {
               const products = snapshot.docs.map(doc => doc.data());
               const lastKey = snapshot.docs[snapshot.docs.length - 1];
-              debugger;
+              
               resolve({ products, lastKey, total });
             }
           } catch (e) {
@@ -176,52 +176,39 @@ class Firebase {
         }, 15000);
 
         try {
-          const searchedNameRef = productsRef
-            .orderBy("name_lower")
-            .where("name_lower", ">=", searchKey)
-            .where("name_lower", "<=", `${searchKey}\uf8ff`)
-            .limit(12);
-          const searchedKeywordsRef = productsRef
-            .orderBy("dateAdded", "desc")
-            .where("keywords", "array-contains-any", searchKey.split(" "))
-            .limit(12);
+          debugger;
+          const searchedKeywordsRef = query(productsRef,
+            
+            where("keywords", "array-contains-any", searchKey.split(" ")),
+            limit(12));
 
-          // const totalResult = await totalQueryRef.get();
-          const nameSnaps = await searchedNameRef.get();
-          const keywordsSnaps = await searchedKeywordsRef.get();
-          // const total = totalResult.docs.length;
+            const searchedNameProducts = query(productsRef,
+              
+              where("name_lower", "<=", `${searchKey}\uf8ff`),
+              limit(12));
 
+            
+          const keywordsSnaps = await getDocs(searchedKeywordsRef);
+          const namedSnaps = await getDocs(searchedNameProducts);
+          
+          
           clearTimeout(timeout);
           if (!didTimeout) {
             const searchedNameProducts = [];
             const searchedKeywordsProducts = [];
-            let lastKey = null;
-
-            if (!nameSnaps.empty) {
-              nameSnaps.forEach((doc) => {
-                searchedNameProducts.push({ id: doc.id, ...doc.data() });
-              });
-              lastKey = nameSnaps.docs[nameSnaps.docs.length - 1];
-            }
-
+            let lastKey = null;          
+            let products = [];
+            
             if (!keywordsSnaps.empty) {
               keywordsSnaps.forEach((doc) => {
-                searchedKeywordsProducts.push({ id: doc.id, ...doc.data() });
+                products.push(doc.data());
               });
             }
-
-            // MERGE PRODUCTS
-            const mergedProducts = [
-              ...searchedNameProducts,
-              ...searchedKeywordsProducts,
-            ];
-            const hash = {};
-
-            mergedProducts.forEach((product) => {
-              hash[product.id] = product;
+            keywordsSnaps.forEach((doc) => {
+              // results.push({id: doc.id, data: doc.data()});
+              products.push(doc.data());
             });
-
-            resolve({ products: Object.values(hash), lastKey });
+            resolve({ products});
           }
         } catch (e) {
           if (didTimeout) return;
