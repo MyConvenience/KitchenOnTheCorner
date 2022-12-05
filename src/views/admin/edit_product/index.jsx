@@ -6,7 +6,7 @@ import { useDispatch } from 'react-redux';
 import { Redirect, withRouter } from 'react-router-dom';
 import { editProduct } from '@/redux/actions/productActions';
 
-const ProductForm = lazy(() => import('../components/ProductForm'));
+import ProductForm from '../components/ProductForm';
 
 const EditProduct = ({ match }) => {
   useDocumentTitle('Edit Product | KOTC');
@@ -22,22 +22,11 @@ const EditProduct = ({ match }) => {
     <div className="product-form-container">
       {error && <Redirect to="/dashboard/products" />}
       <h2>Edit Product</h2>
-      {product && (
-        <Suspense fallback={(
-          <div className="loader" style={{ minHeight: '80vh' }}>
-            <h6>Loading ... </h6>
-            <br />
-            <LoadingOutlined />
-          </div>
-        )}
-        >
           <ProductForm
             isLoading={isLoading}
             onSubmit={onSubmitForm}
             product={product}
           />
-        </Suspense>
-      )}
     </div>
   );
 };

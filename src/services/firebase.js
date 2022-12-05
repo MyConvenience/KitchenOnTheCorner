@@ -107,9 +107,19 @@ class Firebase {
   // // PRODUCT ACTIONS --------------
 
   getSingleProduct = async (id) => {
-    const docRef = doc(this.db, "products", id);
-    const docSnap = await getDoc(docRef);
-    return docSnap.data();
+    try
+    {
+      const productsRef = collection(this.db, "products");
+      const docQuery = query(productsRef, where("id", "==", id));
+      const docSnap = await getDocs(docQuery);
+    
+      let match = null;
+      docSnap.forEach(doc => match = doc.data());
+      return match;
+    }
+    catch (err) {
+      console.error(err);
+    }
   }
 
   getProducts = (lastRefKey) => {
@@ -147,10 +157,13 @@ class Firebase {
             clearTimeout(timeout);
 
             if (!didTimeout) {
-              const products = snapshot.docs.map(doc => doc.data());
+              let products = [];
+              snapshot.forEach((doc) => {
+                products.push(doc.data());
+              });
               const lastKey = snapshot.docs[snapshot.docs.length - 1];
               
-              resolve({ products, lastKey, total });
+              resolve({ products: _.uniqBy(products, 'id'), lastKey, total });
             }
           } catch (e) {
             if (didTimeout) return;
@@ -233,7 +246,6 @@ class Firebase {
       return results;
     }
     catch (err) {
-      debugger;
       console.error(err);
     }
   }
@@ -257,7 +269,6 @@ class Firebase {
       return results;
     }
     catch (err) {
-      debugger;
       console.error(err);
     }
   }

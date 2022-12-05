@@ -14,11 +14,13 @@ const ProductItem = ({ product }) => {
   const productRef = useRef(null);
 
   const onClickEdit = () => {
-    history.push(`${EDIT_PRODUCT}/${product.id}`);
+    const url = `${EDIT_PRODUCT}/${product.id}`;
+    debugger;
+    history.push(url);
   };
 
   const onDeleteProduct = () => {
-    productRef.current.classList.toggle('item-active');
+    // productRef.current.classList.toggle('item-active');
   };
 
   const onConfirmDelete = () => {

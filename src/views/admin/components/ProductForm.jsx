@@ -184,6 +184,7 @@ const ProductForm = ({ product, onSubmit, isLoading }) => {
                   />
                   <label><Field type="checkbox" name="isFeatured"/>Is Featured</label>
                   <label><Field type="checkbox" name="isRecommended"/>Is Recommended</label>
+                  <label><Field type="checkbox" name="isAgeRestricted"/>Age Restricted</label>
                   <label><Field type="checkbox" name="isTaxable"/>Taxable</label>
             </fieldset>           
             <fieldset>
@@ -195,7 +196,7 @@ const ProductForm = ({ product, onSubmit, isLoading }) => {
               <DataSheetGrid value={options} onChange={setOptions} columns={optionColumns}/>
             </fieldset>
             <Button variant="primary" onClick={() => onSubmitForm(
-                  _.merge({options: options, sizes: sizes, name_lower: values.name.toLower()}, values))}>
+                  _.merge({options: options, sizes: sizes, name_lower: values.name.toLowerCase()}, values))}>
               Submit
             </Button>
           </Form>

@@ -20,7 +20,13 @@ export const productSizes = {
   personal: 'Personal',
   small: '16oz',
   medium: '20oz',
-  large: '28oz'
+  large: '28oz',
+  each: 'each',
+  four: '4-pack',
+  six: '6-Pack',
+  eight: '8-Pack',
+  twelve: '12-pack',
+  case: 'Case'
 };
 
 export const displayMoney = (n) => {
