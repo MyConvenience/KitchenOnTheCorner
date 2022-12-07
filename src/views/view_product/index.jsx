@@ -3,7 +3,7 @@ import { ColorChooser, ImageLoader, MessageDisplay } from '@/components/common';
 import { ProductShowcaseGrid } from '@/components/product';
 import { RECOMMENDED_PRODUCTS, SHOP } from '@/constants/routes';
 import { displayMoney, productSizes } from '@/helpers/utils';
-import {useBasket,useDocumentTitle,useProduct,useRecommendedProducts,useScrollTop} from '@/hooks';
+import {useBasket,useDocumentTitle,useProduct,useRecommendedProducts, useCrossSells, useScrollTop} from '@/hooks';
 import React, { useEffect, useRef, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import {Popover, ButtonGroup, SplitButton, Dropdown, OverlayTrigger, Button, Form} from 'react-bootstrap';
@@ -20,14 +20,14 @@ const ViewProduct = () => {
   useDocumentTitle(`View ${product?.name || 'Item'}`);
 
   const [selectedImage, setSelectedImage] = useState(product?.image || '');
-  
+    
   const {
-    recommendedProducts,
-    fetchRecommendedProducts,
-    isLoading: isLoadingFeatured,
-    error: errorFeatured
-  } = useRecommendedProducts(6);
-  
+    suggestedProducts,
+    fetchSuggestedProducts,
+    isLoading: isLoadingSuggested,
+    error: errorSuggested
+  } = useCrossSells(6);
+
   const createCartDefaults = () => {
     var cartItem = {};
     var options = {};
@@ -42,11 +42,28 @@ const ViewProduct = () => {
   useEffect(() => {
     setSelectedImage(product?.images[0]);
     setSelection(createCartDefaults());
+    if (product?.crossSells?.length > 0) {
+      fetchSuggestedProducts(product.crossSells, 6);
+    }
   }, [product]);
 
 
   const computeItemTotal = (item) => {
-    return (item.qty * item.price) + _.sum(Object.keys(item.options).map(name => item.options[name].checked ? item.options[name].price : 0));
+    const extPrice = item.qty * item.price;
+    let optionTotal = 0;
+
+    Object.keys(item.options).forEach( name => {
+      const option = item.options[name];
+      if (option.checked) {
+        if (option.margin) {
+          optionTotal += (extPrice * option.margin * item.qty);
+        } else {
+          optionTotal += (option.price * item.qty);
+        }
+      }
+    });
+
+    return extPrice + optionTotal;
   }
 
   useEffect(() => {
@@ -76,12 +93,14 @@ const ViewProduct = () => {
       <Popover.Body>
         Please select from among these options
         <Form>
-          {product.options.map(o => 
+          {product.options.map(o => {
+            const isChecked = selection[size].options[o.name].checked;
+            return (            
             <div>
-              <input key={o.name} type='checkbox' value={selection[size].options[o.name].checked} onChange={() => toggleOption(size, o.name)} />
+              <input key={o.name} type='checkbox' value={isChecked} onChange={() => toggleOption(size, o.name)} />
               <span>{`${o.label}: ${displayMoney(o.price)}`}</span>
-            </div>
-          )}
+            </div>);
+          })}
         </Form>
       </Popover.Body>
     </Popover>
@@ -89,7 +108,7 @@ const ViewProduct = () => {
   
   const renderOptions = (size) => {
     if ((product.options || []).length > 0) {
-      return (<OverlayTrigger key={size} trigger="click" placement="bottom" overlay={optionsPopover(size)}>
+      return (<OverlayTrigger key={size} trigger="click" placement="right" overlay={optionsPopover(size)}>
       <Button variant="default">Choose Options</Button>
     </OverlayTrigger>);
     }
@@ -212,17 +231,17 @@ const ViewProduct = () => {
           </div>
           <div style={{ marginTop: '10rem' }}>
             <div className="display-header">
-              <h1>Recommended</h1>
+              <h1>May We Suggest...</h1>
               <Link to={RECOMMENDED_PRODUCTS}>See All</Link>
             </div>
-            {errorFeatured && !isLoadingFeatured ? (
+            {errorSuggested && !isLoadingSuggested ? (
               <MessageDisplay
                 message={error}
-                action={fetchRecommendedProducts}
+                action={fetchSuggestedProducts}
                 buttonLabel="Try Again"
               />
             ) : (
-              <ProductShowcaseGrid products={recommendedProducts} skeletonCount={3} />
+              <ProductShowcaseGrid products={suggestedProducts} skeletonCount={3} />
             )}
           </div>
         </div>

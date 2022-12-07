@@ -1,5 +1,5 @@
 import { initializeApp } from 'firebase/app';
-import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { getStorage, ref, uploadBytes, getDownloadURL, listAll } from 'firebase/storage';
 import { getAuth, signOut, signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth';
 import { getFirestore, collection, doc, getDoc, getDocs, setDoc, query, where, getCountFromServer, limit, startAfter, orderBy  } from 'firebase/firestore';
 import firebaseConfig from "./config";
@@ -227,6 +227,25 @@ class Firebase {
       })();
     });
   };
+
+  getCrossSellProducts = async (terms, maxRecords = 12) => {
+    try {
+      const productsRef = collection(this.db, "products");
+      const keywordQuery = query(productsRef,            
+            where("keywords", "array-contains-any", terms),
+            orderBy("popularity", "desc"),
+            limit(maxRecords));
+
+      const keywordsSnaps = await getDocs(keywordQuery);
+      let products = [];            
+      keywordsSnaps.forEach((doc) => {
+        products.push(doc.data());
+      });
+      return products;  
+    } catch (err) {
+      console.error(err);
+    }
+  }
 
   getFeaturedProducts = async (itemsCount = 12) => {
     try
