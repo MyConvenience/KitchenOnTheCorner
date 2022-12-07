@@ -6,7 +6,7 @@ import { displayMoney, productSizes } from '@/helpers/utils';
 import {useBasket,useDocumentTitle,useProduct,useRecommendedProducts,useScrollTop} from '@/hooks';
 import React, { useEffect, useRef, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import {Popover, ButtonGroup, SplitButton, Dropdown, OverlayTrigger, Button} from 'react-bootstrap';
+import {Popover, ButtonGroup, SplitButton, Dropdown, OverlayTrigger, Button, Form} from 'react-bootstrap';
 import _ from 'lodash';
 
 
@@ -28,17 +28,30 @@ const ViewProduct = () => {
     error: errorFeatured
   } = useRecommendedProducts(6);
   
-  useEffect(() => {
+  const createCartDefaults = () => {
     var cartItem = {};
-    const x = product?.sizes?.map(s => cartItem[s.size] = { qty: 1, options: product.options });
-    setSelectedImage(product?.images[0]);
-    setSelection(cartItem);
-  }, [product]);
+    var options = {};
+
+    (product?.options || []).map(o => options[o.name] = { price: o.price, margin: o.margin, checked: false, notes: null});
+    product?.sizes?.map(s => cartItem[s.size] = { qty: 1, price: s.price, options: options });
+
+    console.dir(cartItem);
+    return cartItem;
+  }
 
   useEffect(() => {
-    debugger;
+    setSelectedImage(product?.images[0]);
+    setSelection(createCartDefaults());
+  }, [product]);
+
+
+  const computeItemTotal = (item) => {
+    return (item.qty * item.price) + _.sum(Object.keys(item.options).map(name => item.options[name].checked ? item.options[name].price : 0));
+  }
+
+  useEffect(() => {
     var total = 0;
-    Object.keys(selection).map( key => total += (selection[key].qty * selection[key].price));
+    Object.keys(selection).map( key => total += computeItemTotal(selection[key]));
     setTotal(total);
   }, [selection]);
 
@@ -47,57 +60,79 @@ const ViewProduct = () => {
     addToBasket({ ...product });
   };
 
-  const optionsPopover = (
+  const toggleOption = (size, option) => {
+    var sizeEntry = _.merge({}, selection[size]);
+    sizeEntry.options[option].checked = !sizeEntry.options[option].checked;
+    var update = _.merge({}, selection);
+    update[size] = sizeEntry;
+
+    console.dir(update);
+    setSelection(update);
+  }
+
+  const optionsPopover = (size) => (
     <Popover id="popover-basic">
-      <Popover.Header as="h3">Popover right</Popover.Header>
+      <Popover.Header as="h3">Product Options</Popover.Header>
       <Popover.Body>
-        And here's some <strong>amazing</strong> content. It's very engaging.
-        right?
+        Please select from among these options
+        <Form>
+          {product.options.map(o => 
+            <div>
+              <input key={o.name} type='checkbox' value={selection[size].options[o.name].checked} onChange={() => toggleOption(size, o.name)} />
+              <span>{`${o.label}: ${displayMoney(o.price)}`}</span>
+            </div>
+          )}
+        </Form>
       </Popover.Body>
     </Popover>
   );
   
-  const renderOptions = (key) => {
+  const renderOptions = (size) => {
     if ((product.options || []).length > 0) {
-      return (<OverlayTrigger key={key} trigger="click" placement="right" overlay={optionsPopover}>
-      <Button variant="success">Choose Options</Button>
+      return (<OverlayTrigger key={size} trigger="click" placement="bottom" overlay={optionsPopover(size)}>
+      <Button variant="default">Choose Options</Button>
     </OverlayTrigger>);
     }
     return null;
   }
 
-  const decrement = (cartItem) => {
+  const decrement = (size, cartItem) => {
     if (cartItem.qty >= 0) {
-      cartItem.qty = cartItem.qty - 1;      
-      const s = _.merge({}, selection, cartItem);
-      setSelection(s);
+      cartItem.qty--;
+      var update = {};      
+      update[size] = cartItem;
+      const s = _.merge({}, selection, update);
+        setSelection(s);
     }
   }
 
-  const increment = (cartItem) => {
-    debugger;
-    cartItem.qty = cartItem.qty + 1;
-    const s = _.merge({}, selection, cartItem);
+  const increment = (size, cartItem) => {
+    cartItem.qty++;
+    var update = {};
+    update[size] = cartItem;
+    const s = _.merge({}, selection, update);
+    console.log('increment: ');
+    console.dir(s);
     setSelection(s);
   }
 
   
-  const quantitySelector = (cartItem) => {
+  const quantitySelector = (size, cartItem) => {
     return (
     <ButtonGroup>
-      <Button variant='primary' onClick={() => decrement(cartItem)}>-</Button>
+      <Button variant='primary' onClick={() => decrement(size, cartItem)}>-</Button>
       <Button variant='primary'>{`${cartItem.qty}`}</Button>
-      <Button variant='primary' onClick={()=> increment(cartItem)}>+</Button>
+      <Button variant='primary' onClick={()=> increment(size, cartItem)}>+</Button>
     </ButtonGroup>);
   }
 
   const renderSize = (s) => {
-    const optionOverlay = (product.options || []).length > 0 ? renderOptions(`${s.size}_options`) : null;
+    const optionOverlay = (product.options || []).length > 0 ? renderOptions(s.size) : null;
     const cartItem = selection[s.size];
 
     return (<div key={s.size}>
       {`${productSizes[s.size]}: ${displayMoney(s.price)}`}
-      <div>{quantitySelector(cartItem)}</div>
+      {quantitySelector(s.size, cartItem)}
       {optionOverlay}
     </div>);
   }
