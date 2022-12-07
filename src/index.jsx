@@ -9,6 +9,8 @@ import '@/styles/style.scss';
 import WebFont from 'webfontloader';
 import App from './App';
 import firebase from '@/services/firebase';
+import 'bootstrap';
+
 
 WebFont.load({
   google: {
