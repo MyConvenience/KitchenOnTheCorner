@@ -32,10 +32,10 @@ const ViewProduct = () => {
     var cartItem = {};
     var options = {};
 
-    (product?.options || []).map(o => options[o.name] = { price: o.price, margin: o.margin, checked: false, notes: null});
+    (product?.options || []).map(o => options[o.name] = { price: o.price, margin: o.margin, checked: false, notes:  ''});
     product?.sizes?.map(s => cartItem[s.size] = { qty: 1, price: s.price, options: options });
 
-    console.dir(cartItem);
+    // console.dir(cartItem);
     return cartItem;
   }
 
@@ -74,7 +74,20 @@ const ViewProduct = () => {
 
 
   const handleAddToBasket = () => {
-    addToBasket({ ...product });
+    const order = Object.keys(selection)
+        .filter(sizeName => selection[sizeName].qty > 0)
+        .map(sizeName => _.merge({ size: sizeName}, selection[sizeName]) );
+
+      if (order.length > 0) {
+        const basketItem =  { 
+          productId: product.id, 
+          productName: product.name,
+          image: product.images[0],
+          order
+        };
+        console.dir(basketItem);
+        addToBasket(basketItem);    
+      }
   };
 
   const toggleOption = (size, option) => {
@@ -83,7 +96,7 @@ const ViewProduct = () => {
     var update = _.merge({}, selection);
     update[size] = sizeEntry;
 
-    console.dir(update);
+    // console.dir(update);
     setSelection(update);
   }
 
@@ -130,8 +143,7 @@ const ViewProduct = () => {
     var update = {};
     update[size] = cartItem;
     const s = _.merge({}, selection, update);
-    console.log('increment: ');
-    console.dir(s);
+    // console.dir(s);
     setSelection(s);
   }
 

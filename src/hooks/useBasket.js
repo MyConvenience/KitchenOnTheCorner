@@ -8,12 +8,12 @@ const useBasket = () => {
 
   const isItemOnBasket = (id) => !!basket.find((item) => item.id === id);
 
-  const addToBasket = (product) => {
-    if (isItemOnBasket(product.id)) {
-      dispatch(removeFromBasket(product.id));
+  const addToBasket = (cartItem) => {
+    if (isItemOnBasket(cartItem.productId)) {
+      dispatch(removeFromBasket(cartItem.productId));
       displayActionMessage('Item removed from basket', 'info');
     } else {
-      dispatch(dispatchAddToBasket(product));
+      dispatch(dispatchAddToBasket(cartItem));
       displayActionMessage('Item added to basket', 'success');
     }
   };
