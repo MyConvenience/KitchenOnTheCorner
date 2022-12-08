@@ -1,7 +1,7 @@
 import { initializeApp } from 'firebase/app';
 import { getStorage, ref, uploadBytes, getDownloadURL, listAll } from 'firebase/storage';
 import { getAuth, signOut, signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth';
-import { getFirestore, collection, doc, getDoc, getDocs, setDoc, query, where, getCountFromServer, limit, startAfter, orderBy  } from 'firebase/firestore';
+import { getFirestore, collection, doc, getDoc, getDocs, setDoc, query, where, updateDoc, getCountFromServer, limit, startAfter, orderBy  } from 'firebase/firestore';
 import firebaseConfig from "./config";
 import slugify from 'slugify';
 import { FileImageFilled } from '@ant-design/icons';
@@ -98,8 +98,9 @@ class Firebase {
       });
     });
 
-  saveBasketItems = (items, userId) =>
-    this.db.collection("users").doc(userId).update({ basket: items });
+  saveBasketItems = (items, userId) => {
+    updateDoc(doc(this.db, "users", userId), {basket: items});
+  }
 
   setAuthPersistence = () =>
     this.auth.setPersistence(app.auth.Auth.Persistence.LOCAL);
