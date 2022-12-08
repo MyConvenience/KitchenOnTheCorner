@@ -3,7 +3,7 @@ import Carousel from "react-bootstrap/Carousel";
 const Rotator = () => {
   return (
     <Carousel>
-      <Carousel.Item as="span" interval={1000}>
+      <Carousel.Item interval={3000}>
         <img
           src="https://firebasestorage.googleapis.com/v0/b/kitchenonthecorner-bfc5c.appspot.com/o/products%2Fchipotle-chicken-bbq-pizza%2Fimages%2Fbbq-pizza.jpg?alt=media&token=62cd5bca-8e44-4389-97d5-036a4b6f9fd7"
           alt="First slide"
@@ -13,7 +13,7 @@ const Rotator = () => {
           <p>Nulla vitae elit libero, a pharetra augue mollis interdum.</p>
         </Carousel.Caption>
       </Carousel.Item>
-      <Carousel.Item as="span" interval={500}>
+      <Carousel.Item interval={3000}>
         <img
           src="https://firebasestorage.googleapis.com/v0/b/kitchenonthecorner-bfc5c.appspot.com/o/products%2Fchipotle-chicken-bbq-pizza%2Fimages%2Fbbq-pizza.jpg?alt=media&token=62cd5bca-8e44-4389-97d5-036a4b6f9fd7"
           alt="Second slide"
@@ -23,7 +23,7 @@ const Rotator = () => {
           <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
         </Carousel.Caption>
       </Carousel.Item>
-      <Carousel.Item as="span">
+      <Carousel.Item interval={3000}>
         <img
           src="https://firebasestorage.googleapis.com/v0/b/kitchenonthecorner-bfc5c.appspot.com/o/products%2Fchipotle-chicken-bbq-pizza%2Fimages%2Fbbq-pizza.jpg?alt=media&token=62cd5bca-8e44-4389-97d5-036a4b6f9fd7"
           alt="Third slide"
