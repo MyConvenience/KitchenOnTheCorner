@@ -64,8 +64,9 @@ input[type=radio] {
   padding: 0;
   height: initial;
   width: initial;
+  margin-right: 5px;
   margin-bottom: 0;
-  display: none;
+  vertical-align: middle;
   cursor: pointer;
 }
 
@@ -100,7 +101,7 @@ input[type=radio] + label:before {
 input[type=checkbox] + label:after,
 input[type=radio] + label:after {
   content: '';
-  display: block;
+  display: inline;
   position: absolute;
   top: 0;
   left: 10px;

@@ -5,8 +5,9 @@ import PropType from 'prop-types';
 import React from 'react';
 import Skeleton, { SkeletonTheme } from 'react-loading-skeleton';
 import { useHistory } from 'react-router-dom';
+import { Alert } from 'react-bootstrap';
 
-const ProductItem = ({ product, isItemOnBasket, addToBasket }) => {
+const ProductItem = ({ product, addToBasket }) => {
   const history = useHistory();
 
   const onClickItem = () => {
@@ -17,10 +18,8 @@ const ProductItem = ({ product, isItemOnBasket, addToBasket }) => {
     }
   };
 
-  const itemOnBasket = isItemOnBasket ? isItemOnBasket(product.id) : false;
-
   const handleAddToBasket = () => {
-    if (addToBasket) addToBasket({ ...product, selectedSize: product.sizes[0] });
+    Alert('Steve - this add to basket needs fixing');
   };
 
   return (
@@ -61,11 +60,11 @@ const ProductItem = ({ product, isItemOnBasket, addToBasket }) => {
         </div>
         {product.id && (
           <button
-            className={`product-card-button button-small button button-block ${itemOnBasket ? 'button-border button-border-gray' : ''}`}
+            className='product-card-button button-small button button-block'
             onClick={handleAddToBasket}
             type="button"
           >
-            {itemOnBasket ? 'Remove from basket' : 'Add to basket'}
+            Add to basket
           </button>
         )}
 
@@ -75,14 +74,12 @@ const ProductItem = ({ product, isItemOnBasket, addToBasket }) => {
 };
 
 ProductItem.defaultProps = {
-  isItemOnBasket: undefined,
   addToBasket: undefined
 };
 
 ProductItem.propTypes = {
   // eslint-disable-next-line react/forbid-prop-types
   product: PropType.object.isRequired,
-  isItemOnBasket: PropType.func,
   addToBasket: PropType.func
 };
 

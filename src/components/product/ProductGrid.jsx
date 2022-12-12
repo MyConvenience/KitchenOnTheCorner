@@ -4,7 +4,7 @@ import React from 'react';
 import ProductItem from './ProductItem';
 
 const ProductGrid = ({ products }) => {
-  const { addToBasket, isItemOnBasket } = useBasket();
+  const { addToBasket } = useBasket();
 
   return (
     <div className="product-grid">
@@ -17,7 +17,6 @@ const ProductGrid = ({ products }) => {
       )) : products.map((product) => (
         <ProductItem
           key={product.id}
-          isItemOnBasket={isItemOnBasket}
           addToBasket={addToBasket}
           product={product}
         />

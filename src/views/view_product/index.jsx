@@ -2,170 +2,102 @@ import { ArrowLeftOutlined, LoadingOutlined } from '@ant-design/icons';
 import { ColorChooser, ImageLoader, MessageDisplay } from '@/components/common';
 import { ProductShowcaseGrid } from '@/components/product';
 import { RECOMMENDED_PRODUCTS, SHOP } from '@/constants/routes';
-import { displayMoney, productSizes } from '@/helpers/utils';
-import {useBasket,useDocumentTitle,useProduct,useRecommendedProducts, useCrossSells, useScrollTop} from '@/hooks';
+import { displayMoney, displayPercent, productSizes } from '@/helpers/utils';
+import {useBasket,useDocumentTitle,useProduct,useRecommendedProducts,useScrollTop} from '@/hooks';
 import React, { useEffect, useRef, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import {Popover, ButtonGroup, SplitButton, Dropdown, OverlayTrigger, Button, Form} from 'react-bootstrap';
 import _ from 'lodash';
-
+import { Formik, Field } from 'formik';
+import { defaultProps } from 'react-select/creatable/dist/react-select.cjs.prod';
 
 const ViewProduct = () => {
   const { id } = useParams();
-  const [ selection, setSelection ] = useState({});
+  const [options, setOptions] = useState({});
+  const [selectedSize, setSelectedSize] = useState(null);
   const [ total, setTotal ] = useState(0);
+  const [ quantity, setQuantity ] = useState(1);
   const { product, isLoading, error } = useProduct(id);
-  const { addToBasket, isItemOnBasket } = useBasket(id);
+  const { addToBasket } = useBasket(id);
   useScrollTop();
   useDocumentTitle(`View ${product?.name || 'Item'}`);
 
   const [selectedImage, setSelectedImage] = useState(product?.image || '');
     
   const {
-    suggestedProducts,
-    fetchSuggestedProducts,
-    isLoading: isLoadingSuggested,
-    error: errorSuggested
-  } = useCrossSells(6);
-
-  const createCartDefaults = () => {
-    var cartItem = {};
-    var options = {};
-
-    (product?.options || []).map(o => options[o.name] = { price: o.price, margin: o.margin, checked: false, notes:  ''});
-    product?.sizes?.map(s => cartItem[s.size] = { qty: 1, price: s.price, options: options });
-
-    // console.dir(cartItem);
-    return cartItem;
-  }
-
+    recommendedProducts,
+    fetchRecommendedProducts,
+    isLoading: isLoadingFeatured,
+    error: errorFeatured
+  } = useRecommendedProducts(6);
+  
   useEffect(() => {
-    setSelectedImage(product?.images[0]);
-    setSelection(createCartDefaults());
-    if (product?.crossSells?.length > 0) {
-      fetchSuggestedProducts(product.crossSells, 6);
+    if (product) {
+      setSelectedSize(product.sizes[0].size);
+      setSelectedImage(product.images[0]);
+      setTotal(product.sizes[0].price);  
     }
   }, [product]);
 
+  useEffect(()=> {
+    if (product && selectedSize) {
+      const productSize = product.sizes.filter(s => s.size === selectedSize)[0];
+      const itemTotal = productSize.price * quantity;
 
-  const computeItemTotal = (item) => {
-    const extPrice = item.qty * item.price;
-    let optionTotal = 0;
-
-    Object.keys(item.options).forEach( name => {
-      const option = item.options[name];
-      if (option.checked) {
-        if (option.margin) {
-          optionTotal += (extPrice * option.margin * item.qty);
-        } else {
-          optionTotal += (option.price * item.qty);
-        }
-      }
-    });
-
-    return extPrice + optionTotal;
-  }
-
-  useEffect(() => {
-    var total = 0;
-    Object.keys(selection).map( key => total += computeItemTotal(selection[key]));
-    setTotal(total);
-  }, [selection]);
-
+      const optionTotal = options ? 
+        _.sum(Object.keys(options)
+            .map(optionName =>  { return { ...product.options.filter(o => o.name === optionName)[0], checked: options[optionName]}})
+            .filter(x => x.checked)
+            .map(x => x.price 
+              ? x.price 
+              : x.margin ? itemTotal * x.margin : 0))
+        : 0;
+  
+      setTotal(itemTotal + optionTotal);  
+    }
+  }, [options, selectedSize, quantity]);
 
   const handleAddToBasket = () => {
-    const order = Object.keys(selection)
-        .filter(sizeName => selection[sizeName].qty > 0)
-        .map(sizeName => _.merge({ size: sizeName}, selection[sizeName]) );
+    const basketItem =  { 
+      productId: product.id, 
+      productName: product.name,
+      image: product.images[0],
+      size: selectedSize,
+      quantity,
+      total,
+      options
+    };
 
-      if (order.length > 0) {
-        const basketItem =  { 
-          productId: product.id, 
-          productName: product.name,
-          image: product.images[0],
-          order
-        };
-        console.dir(basketItem);
-        addToBasket(basketItem);    
-      }
-  };
+    console.dir(basketItem);
+    addToBasket(basketItem);    
+};
 
-  const toggleOption = (size, option) => {
-    var sizeEntry = _.merge({}, selection[size]);
-    sizeEntry.options[option].checked = !sizeEntry.options[option].checked;
-    var update = _.merge({}, selection);
-    update[size] = sizeEntry;
-
-    // console.dir(update);
-    setSelection(update);
-  }
-
-  const optionsPopover = (size) => (
-    <Popover id="popover-basic">
-      <Popover.Header as="h3">Product Options</Popover.Header>
-      <Popover.Body>
-        Please select from among these options
-        <Form>
-          {product.options.map(o => {
-            const isChecked = selection[size].options[o.name].checked;
-            return (            
-            <div>
-              <input key={o.name} type='checkbox' value={isChecked} onChange={() => toggleOption(size, o.name)} />
-              <span>{`${o.label}: ${displayMoney(o.price)}`}</span>
-            </div>);
-          })}
-        </Form>
-      </Popover.Body>
-    </Popover>
-  );
-  
-  const renderOptions = (size) => {
-    if ((product.options || []).length > 0) {
-      return (<OverlayTrigger key={size} trigger="click" placement="right" overlay={optionsPopover(size)}>
-      <Button variant="default">Choose Options</Button>
-    </OverlayTrigger>);
+  const formatSize = (s) => `${productSizes[s.size]}: ${displayMoney(s.price)}`;
+  const formatOption = (o) => {
+    if (o.price) {
+      return `${o.label}: ${displayMoney(o.price)}`;
     }
-    return null;
-  }
-
-  const decrement = (size, cartItem) => {
-    if (cartItem.qty >= 0) {
-      cartItem.qty--;
-      var update = {};      
-      update[size] = cartItem;
-      const s = _.merge({}, selection, update);
-        setSelection(s);
+    if (o.margin) {
+      return `${o.label}: ${displayPercent(o.margin)}`;
     }
+    return `${o.label}: FREE`;
+  } 
+
+  const hasMultipleSizes = (product?.sizes || []).length > 1;
+  const hasOptions = (product?.options || []).length > 0;
+
+
+  const onCheckChanged = ({target:{name, checked}}) => {
+    console.log(`${name} checked:${checked}`);
+
+    let update = {};
+    update[name] = checked;
+    const newOptions = _.merge({}, options, update);
+    setOptions(newOptions);
   }
 
-  const increment = (size, cartItem) => {
-    cartItem.qty++;
-    var update = {};
-    update[size] = cartItem;
-    const s = _.merge({}, selection, update);
-    // console.dir(s);
-    setSelection(s);
-  }
-
-  
-  const quantitySelector = (size, cartItem) => {
-    return (
-    <ButtonGroup>
-      <Button variant='primary' onClick={() => decrement(size, cartItem)}>-</Button>
-      <Button variant='primary'>{`${cartItem.qty}`}</Button>
-      <Button variant='primary' onClick={()=> increment(size, cartItem)}>+</Button>
-    </ButtonGroup>);
-  }
-
-  const renderSize = (s) => {
-    const optionOverlay = (product.options || []).length > 0 ? renderOptions(s.size) : null;
-    const cartItem = selection[s.size];
-
-    return (<div key={s.size}>
-      {`${productSizes[s.size]}: ${displayMoney(s.price)}`}
-      {quantitySelector(s.size, cartItem)}
-      {optionOverlay}
-    </div>);
+  const onQuantityChanged = ({target:{name, value}}) => {
+    setQuantity(value);
   }
 
   return (
@@ -221,24 +153,36 @@ const ViewProduct = () => {
               <br />
               <div className="divider" />
               <br />
-              <div>
-                { product ? 
-                  (product.sizes || []).map(size => renderSize(size)) 
-                  : null 
-                }
-                <br />
-              </div>
-              <br />
-              <h1>{`Total: ${displayMoney(total)}`}</h1>
-              <div className="product-modal-action">
-                <button
-                  className={`button button-small ${isItemOnBasket(product.id) ? 'button-border button-border-gray' : ''}`}
-                  onClick={handleAddToBasket}
-                  type="button"
-                >
-                  {isItemOnBasket(product.id) ? 'Remove From Basket' : 'Add To Basket'}
-                </button>
-              </div>
+                <Form>
+                  <select name="size" value={selectedSize} onChange={({target:{value}}) => setSelectedSize(value)}>
+                    {product.sizes.map(s => <option key={s.size} value={s.size} label={formatSize(s)}/>)}
+                  </select>
+                  <select name="quantity" value={quantity} onChange={({target:{value}})=> setQuantity(value)}>
+                    <option value={1} label="1"/>
+                    <option value={2} label="2"/>
+                    <option value={3} label="3"/>
+                    <option value={4} label="4"/>
+                    <option value={5} label="5"/>
+                    <option value={6} label="6"/>
+                    <option value={7} label="7"/>
+                    <option value={8} label="8"/>
+                    <option value={9} label="9"/>
+                    <option value={10} label="10"/>
+                  </select>
+                  <div>
+                    <div>Options</div>
+                    {
+                      product.options.map(o =>
+                        <div htmlFor={o.name} key={o.name}>
+                          <input name={o.name} value={o.name} onChange={onCheckChanged} type="checkbox"/>{formatOption(o)}
+                        </div>)
+                    }
+                  </div>                           
+                  <h1>{`Total: ${displayMoney(total)}`}</h1>
+                  <button type="submit" className='button button-small' onClick={handleAddToBasket}>
+                    Add To Cart
+                  </button>
+                </Form>
             </div>
           </div>
           <div style={{ marginTop: '10rem' }}>
@@ -261,5 +205,6 @@ const ViewProduct = () => {
     </main>
   );
 };
+
 
 export default ViewProduct;
