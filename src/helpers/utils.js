@@ -29,6 +29,8 @@ export const productSizes = {
   case: 'Case'
 };
 
+export const displayPercent = (percent) => `${(percent * 100).toFixed(2)}%`;
+
 export const displayMoney = (n) => {
   const format = new Intl.NumberFormat('en-US', {
     style: 'currency',
