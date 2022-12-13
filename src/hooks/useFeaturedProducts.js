@@ -14,7 +14,6 @@ const useFeaturedProducts = (itemsCount) => {
       setError('');
 
       const items = await firebase.getFeaturedProducts(itemsCount);
-      console.dir(items);
       
       setFeaturedProducts(items);
       setLoading(false);

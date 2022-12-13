@@ -102,6 +102,28 @@ class Firebase {
   setAuthPersistence = () =>
     this.auth.setPersistence(app.auth.Auth.Persistence.LOCAL);
 
+  // // CONTENT ACTIONS --------------
+  getRotatorPanels = async (activeOnly = 1, itemsCount = 12) => {
+    try
+    {      
+      const contentRef = collection(this.db, "rotator_pages");
+      const fq = activeOnly 
+        ? query(contentRef, where("isActive", "==", true), orderBy("sort", "asc"), limit(itemsCount))
+        : query(contentRef, orderBy("sort", "asc"), limit(itemsCount));
+  
+      const snapshot = await getDocs(fq);
+      let results = [];
+      snapshot.forEach((doc) => {
+        // results.push({id: doc.id, data: doc.data()});
+        results.push(doc.data());
+      });
+      return results;
+    }
+    catch (err) {
+      console.error(err);
+    }
+  }
+
   // // PRODUCT ACTIONS --------------
 
   getSingleProduct = async (id) => {

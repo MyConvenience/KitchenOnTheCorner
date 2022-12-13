@@ -1,17 +1,8 @@
 import { ArrowRightOutlined } from "@ant-design/icons";
 import { MessageDisplay, Rotator } from "@/components/common";
 import { ProductShowcaseGrid } from "@/components/product";
-import {
-  FEATURED_PRODUCTS,
-  RECOMMENDED_PRODUCTS,
-  SHOP,
-} from "@/constants/routes";
-import {
-  useDocumentTitle,
-  useFeaturedProducts,
-  useRecommendedProducts,
-  useScrollTop,
-} from "@/hooks";
+import { FEATURED_PRODUCTS, RECOMMENDED_PRODUCTS, SHOP } from "@/constants/routes";
+import { useDocumentTitle, useFeaturedProducts, useRecommendedProducts, useScrollTop } from "@/hooks";
 import bannerImg from "@/images/banner-girl.png";
 import React from "react";
 import { Link } from "react-router-dom";
@@ -20,20 +11,8 @@ const Home = () => {
   useDocumentTitle("KOTC | Home");
   useScrollTop();
 
-  const {
-    featuredProducts,
-    fetchFeaturedProducts,
-    isLoading: isLoadingFeatured,
-    error: errorFeatured,
-  } = useFeaturedProducts(6);
-  const {
-    recommendedProducts,
-    fetchRecommendedProducts,
-    isLoading: isLoadingRecommended,
-    error: errorRecommended,
-  } = useRecommendedProducts(6);
-
-  console.dir(featuredProducts);
+  const { featuredProducts, fetchFeaturedProducts, isLoading: isLoadingFeatured, error: errorFeatured } = useFeaturedProducts(6);
+  const { recommendedProducts, fetchRecommendedProducts, isLoading: isLoadingRecommended, error: errorRecommended } = useRecommendedProducts(6);
 
   return (
     <main className="content">
