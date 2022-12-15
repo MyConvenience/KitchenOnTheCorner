@@ -1,4 +1,4 @@
-import { ADMIN_DASHBOARD } from '@/constants/routes';
+import { ADMIN_DASHBOARD, HOME } from '@/constants/routes';
 import logo from '@/images/logo-full.png';
 import React from 'react';
 import { useSelector } from 'react-redux';
@@ -14,12 +14,17 @@ const AdminNavigation = () => {
   return (
     <nav className="navigation navigation-admin">
       <div className="logo">
-        <Link to={ADMIN_DASHBOARD} style={{ display: 'flex', alignItems: 'center' }}>
+        <Link to={HOME} style={{ display: 'flex', alignItems: 'center' }}>
           <img alt="Logo" src={logo} />
-          <h3>ADMIN PANEL</h3>
         </Link>
       </div>
       <ul className="navigation-menu">
+        <li className ="navigation-menu-item">
+        <Link to={ADMIN_DASHBOARD} style={{ display: 'flex', alignItems: 'center' }}>
+          ADMIN PANEL
+      </Link>
+
+        </li>
         <li className="navigation-menu-item">
           <UserAvatar
             isAuthenticating={isAuthenticating}
