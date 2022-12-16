@@ -3,10 +3,10 @@ import { ColorChooser, ImageLoader, MessageDisplay } from '@/components/common';
 import { ProductShowcaseGrid } from '@/components/product';
 import { RECOMMENDED_PRODUCTS, SHOP } from '@/constants/routes';
 import { displayMoney, displayPercent, productSizes } from '@/helpers/utils';
-import {useBasket,useDocumentTitle,useProduct,useRecommendedProducts,useScrollTop} from '@/hooks';
+import { useBasket, useDocumentTitle, useProduct, useRecommendedProducts, useScrollTop, useCrossSells} from '@/hooks';
 import React, { useEffect, useRef, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import {Popover, ButtonGroup, SplitButton, Dropdown, OverlayTrigger, Button, Form} from 'react-bootstrap';
+import { Popover, ButtonGroup, SplitButton, Dropdown, OverlayTrigger, Button, Form} from 'react-bootstrap';
 import _ from 'lodash';
 import { Formik, Field } from 'formik';
 import { defaultProps } from 'react-select/creatable/dist/react-select.cjs.prod';
@@ -19,6 +19,7 @@ const ViewProduct = () => {
   const [ quantity, setQuantity ] = useState(1);
   const { product, isLoading, error } = useProduct(id);
   const { addToBasket } = useBasket(id);
+
   useScrollTop();
   useDocumentTitle(`View ${product?.name || 'Item'}`);
 
@@ -31,8 +32,16 @@ const ViewProduct = () => {
     error: errorFeatured
   } = useRecommendedProducts(6);
   
+  const {
+    suggestedProducts,
+    fetchSuggestedProducts,
+    isLoading: isSuggestedLoading,
+    error: errorSuggested
+  } = useCrossSells();
+
   useEffect(() => {
     if (product) {
+      fetchSuggestedProducts(product.crossSells);
       setSelectedSize(product.sizes[0].size);
       setSelectedImage(product.images[0]);
       setTotal(product.sizes[0].price);  
