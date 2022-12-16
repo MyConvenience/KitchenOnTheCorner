@@ -7,13 +7,10 @@ import React from 'react';
 import { connect } from 'react-redux';
 import { Redirect, Route } from 'react-router-dom';
 
-const PrivateRoute = ({
-  isAuth, role, component: Component, ...rest
-}) => (
-  <Route
-    {...rest}
+const PrivateRoute = ({isAuth, role, component: Component, ...rest }) => (
+  <Route {...rest}
     component={(props) => {
-      if (isAuth && role === 'USER') {
+      if (isAuth) {
         return (
           <main className="content">
             <Component {...props} />
@@ -21,9 +18,10 @@ const PrivateRoute = ({
         );
       }
 
-      if (isAuth && role === 'ADMIN') {
-        return <Redirect to={ADMIN_DASHBOARD} />;
-      }
+      // Not sure why admins cannot checkout
+      // if (isAuth && role === 'ADMIN') {
+      //  return <Redirect to={ADMIN_DASHBOARD} />;
+      // }
 
       return (
         <Redirect to={{

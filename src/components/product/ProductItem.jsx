@@ -1,6 +1,6 @@
 import { CheckOutlined } from '@ant-design/icons';
 import { ImageLoader } from '@/components/common';
-import { displayMoney } from '@/helpers/utils';
+import { displayMoney, generateUUID } from '@/helpers/utils';
 import PropType from 'prop-types';
 import React from 'react';
 import Skeleton, { SkeletonTheme } from 'react-loading-skeleton';
@@ -18,7 +18,19 @@ const ProductItem = ({ product, addToBasket }) => {
   };
 
   const handleAddToBasket = () => {
-    alert('Steve - this add to basket needs fixing');
+    const basketItem =  { 
+      id: generateUUID(),
+      productId: product.id, 
+      productName: product.name,
+      image: product.images[0],
+      size: product.sizes[0],
+      quantity: 1,
+      ext_price: product.sizes[0].price,
+      isRestricted: product.isRestricted,
+      options: {}
+    };
+
+    addToBasket(basketItem);
   };
 
   return (

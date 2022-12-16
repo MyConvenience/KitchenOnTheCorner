@@ -16,11 +16,11 @@ const PublicRoute = ({
       // eslint-disable-next-line react/prop-types
       const { from } = props.location.state || { from: { pathname: '/' } };
 
-      if (isAuth && role === 'ADMIN') {
-        return <Redirect to={ADMIN_DASHBOARD} />;
-      }
+      // if (isAuth && role === 'ADMIN') {
+      //   return <Redirect to={ADMIN_DASHBOARD} />;
+      // }
 
-      if ((isAuth && role === 'USER') && (path === SIGNIN || path === SIGNUP)) {
+      if (isAuth && (path === SIGNIN || path === SIGNUP)) {
         return <Redirect to={from} />;
       }
 

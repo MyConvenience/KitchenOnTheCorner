@@ -18,6 +18,12 @@ const OrderSummary = ({ basket, subtotal }) => {
   const onClickPrevious = () => history.push('/');
   const onClickNext = () => history.push(CHECKOUT_STEP_2);
 
+  console.log('OrderSummary');
+
+  if (basket?.length === 0) {
+    return <h1>Your basket is empty</h1>;
+  }
+  
   return (
     <div className="checkout">
       <StepTracker current={1} />

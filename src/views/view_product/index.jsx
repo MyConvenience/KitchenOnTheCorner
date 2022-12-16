@@ -2,7 +2,7 @@ import { ArrowLeftOutlined, LoadingOutlined } from '@ant-design/icons';
 import { ColorChooser, ImageLoader, MessageDisplay } from '@/components/common';
 import { ProductShowcaseGrid } from '@/components/product';
 import { RECOMMENDED_PRODUCTS, SHOP } from '@/constants/routes';
-import { displayMoney, displayPercent, productSizes } from '@/helpers/utils';
+import { displayMoney, displayPercent, productSizes, generateUUID } from '@/helpers/utils';
 import { useBasket, useDocumentTitle, useProduct, useRecommendedProducts, useScrollTop, useCrossSells} from '@/hooks';
 import React, { useEffect, useRef, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
@@ -68,13 +68,15 @@ const ViewProduct = () => {
 
   const handleAddToBasket = () => {
     const basketItem =  { 
+      id: generateUUID(),
       productId: product.id, 
       productName: product.name,
       image: product.images[0],
       size: selectedSize,
       quantity,
-      total,
-      options
+      ext_price: total,
+      options,
+      isRestricted: product.isRestricted
     };
 
     console.dir(basketItem);

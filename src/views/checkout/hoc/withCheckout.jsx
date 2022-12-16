@@ -15,26 +15,22 @@ const withCheckout = (Component) => withRouter((props) => {
   }));
 
   const shippingFee = state.shipping.isInternational ? 50 : 0;
-  const subtotal = calculateTotal(state.basket.map((product) => product.price * product.quantity));
+  const subtotal = calculateTotal(state.basket.map((item) => item.ext_price));
 
   if (!state.isAuth) {
     return <Redirect to={SIGNIN} />;
-  } if (state.basket.length === 0) {
-    return <Redirect to="/" />;
-  } if (state.isAuth && state.basket.length !== 0) {
-    return (
-      <Component
-        // eslint-disable-next-line react/jsx-props-no-spreading
-        {...props}
-        basket={state.basket}
-        payment={state.payment}
-        profile={state.profile}
-        shipping={state.shipping}
-        subtotal={Number(subtotal + shippingFee)}
-      />
-    );
-  }
-  return null;
+  } 
+  return (
+    <Component
+      // eslint-disable-next-line react/jsx-props-no-spreading
+      {...props}
+      basket={state.basket}
+      payment={state.payment}
+      profile={state.profile}
+      shipping={state.shipping}
+      subtotal={Number(subtotal + shippingFee)}
+    />
+  );
 });
 
 export default withCheckout;

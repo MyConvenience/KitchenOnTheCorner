@@ -77,6 +77,7 @@ const Navigation = () => {
         <li><NavLink activeClassName="navigation-menu-active" exact to={ROUTE.HOME}>Home</NavLink></li>
         <li><NavLink activeClassName="navigation-menu-active" to={ROUTE.SHOP}>Shop</NavLink></li>
         <li><NavLink activeClassName="navigation-menu-active" to={ROUTE.FEATURED_PRODUCTS}>Featured</NavLink></li>        
+        <li><NavLink activeClassName="navigation-menu-active" to={ROUTE.CHECKOUT_STEP_1}>Check Out</NavLink></li>        
         {store.user && store.user.role === 'ADMIN' ? <li><NavLink activeClassName="navigation-menu-active" to={ROUTE.ADMIN_DASHBOARD}>Dashboard</NavLink></li> : null}
       </ul>
       {(pathname === ROUTE.SHOP || pathname === ROUTE.SEARCH) && (
