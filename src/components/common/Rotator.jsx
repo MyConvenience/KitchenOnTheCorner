@@ -5,10 +5,8 @@ import ReactMarkdown from 'react-markdown';
 const Rotator = () => {
   const {rotatorPages} = useContent();
 
-    console.dir(rotatorPages);
-
   return (
-      <Carousel>
+      <Carousel variant='dark'>
           {rotatorPages.map(p => 
             <Carousel.Item key={p.name}>
                 <Card>

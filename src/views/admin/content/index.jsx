@@ -1,53 +1,104 @@
 /* eslint-disable react/jsx-props-no-spreading */
 import { Boundary } from '@/components/common';
 import { useContent, useDocumentTitle, useScrollTop } from '@/hooks';
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import { useSelector } from 'react-redux';
 import { HashRouter, withRouter } from 'react-router-dom';
-import {ListGroup, Button, ButtonGroup, Form, Carousel} from 'react-bootstrap';
+import {ListGroup, Button, ButtonGroup, Carousel, Card} from 'react-bootstrap';
 import { FileProtectOutlined } from '@ant-design/icons';
 import MDEditor from '@uiw/react-md-editor';
 import ReactMarkdown from 'react-markdown';
+import { Formik, Form, Field } from 'formik';
 
 const Content = () => {
+  const [index, setIndex] = useState(0);
   const [selected, setSelected] = useState(null);
-  const [title, setTitle] = useState(null);
   const {rotatorPages} = useContent(false);
+  const [markdown, setMarkdown] = useState(null);
+
   useDocumentTitle('User Administration | KOTC Admin');
   useScrollTop();
 
-  const renderForm = () => {
-    return (
-    <Form>
-      <Form.Group className="mb-3" controlId="panelName">
-        <Form.Label>Panel Name</Form.Label>
-        <Form.Control placeholder="Name" />
-      </Form.Group>
-      <Form.Group className="mb-3" controlId="panelName">
-        <Form.Label>Title</Form.Label>
-        <Form.Control as={() => <MDEditor value={title} onChange={setTitle}/>}/>
-      </Form.Group>
-    </Form>);
+  useEffect(()=> {
+    setMarkdown(selected?.body)
+}, [selected]);
+
+  const addPanel = () => {
+    const newPage = {
+      name: 'new_panel',
+      title: 'My New Panel',
+      header: 'Featured',
+      isActive: true,
+      isOverlay: false,
+      navigate: null,
+      sort: 1,
+      image: null
+    };
+
+    rotatorPages.push(newPage);
+    setIndex(rotatorPages.length - 1);
+    setSelected(newPage);
   }
 
-  console.dir(rotatorPages);
+  const renderForm = () => {
+    return (
+      <Formik initialValues={selected}>
+         {({ values, isLoading,
+            errors,
+            touched,
+            handleChange,
+            handleBlur,
+            handleSubmit,
+            isSubmitting }) => (  
+        <Form>
+          <fieldset>
+              <legend>General</legend>
+              <Field disabled={isLoading} name="name" type="text" label="Panel Name"/>
+              <Field disabled={isLoading} name="header" id="header" type="text" label="Header"/> 
+              <Field disabled={isLoading} name="isActive" id="isActive" type="checkbox" label="Active"/>               
+              <Field disabled={isLoading} name="sort" id="sort" type="number" label="Sort Order"/>               
+              <Field disabled={isLoading} name="navigate" id="navigate" type="text" label="Navigate URL"/> 
+            </fieldset>                 
+            <fieldset>
+              <legend>Image</legend>
+                <Field disabled={isLoading} name="image" type="text" label="Image URL"/>
+                <Field disabled={isLoading} name="isOverlay" id="isOverlay" type="checkbox" label="Overlay"/>               
+            </fieldset>
+            <fieldset>
+              <legend>Body</legend>
+              <MDEditor value={markdown} onChange={setMarkdown}/>
+            </fieldset>
+        </Form>
+      )}
+      </Formik>
+    );
+  }
 
   return (
     <Boundary>
-      <h1>Administer site content</h1>
-      <h2>Rotator Panels</h2>
-      <Carousel>
+      <h1>Administer Site Content</h1>
+      <Carousel activeIndex={index} interval={null} onSelect={(selectedIndex, e) => setIndex(selectedIndex)}>
           {rotatorPages.map(p => 
             <Carousel.Item key={p.name}>
-              <h4>{p.name}</h4>
-              <h3>{p.title}</h3>
-              <ReactMarkdown>{p.body}</ReactMarkdown>
-            </Carousel.Item>)}
-      </Carousel>
-      <hr/>      
+                <Card>
+                  {(p.header || '').length > 0 ? <Card.Header>{p.header}</Card.Header> : null}                  
+                  {(p.image || '').length > 0 ? <Card.Img className="rotator-image" variant="left" src={p.image}/> : null}
+                  {(p.isOverlay 
+                  ? <Card.ImgOverlay>
+                        <Card.Title>{p.title}</Card.Title>
+                        <Card.Text><ReactMarkdown>{p.body}</ReactMarkdown></Card.Text>
+                    </Card.ImgOverlay> 
+                  : <Card.Body>
+                      <Card.Title>{p.title}</Card.Title>
+                      <Card.Subtitle>{p.subtitle}</Card.Subtitle>
+                      <Card.Text><ReactMarkdown>{p.body}</ReactMarkdown></Card.Text>
+                  </Card.Body>)}
+              </Card>
+          </Carousel.Item>)}
+      </Carousel>      <hr/>      
       <ButtonGroup>
-        <Button variant="success">Insert Panel</Button>
-        <Button variant="info">Add Panel</Button>
+        <Button variant="success" onClick={() =>addPanel()}>Add Panel</Button>
+        <Button variant="warning" onClick={() => setSelected(rotatorPages[index])}>Edit Panel</Button>
       </ButtonGroup>
       <hr/>
       {selected ? renderForm() : null}
