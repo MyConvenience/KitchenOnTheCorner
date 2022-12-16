@@ -5,8 +5,7 @@ import PropType from 'prop-types';
 import React from 'react';
 import Skeleton, { SkeletonTheme } from 'react-loading-skeleton';
 import { useHistory } from 'react-router-dom';
-import { Alert } from 'react-bootstrap';
-
+  
 const ProductItem = ({ product, addToBasket }) => {
   const history = useHistory();
 
@@ -19,7 +18,7 @@ const ProductItem = ({ product, addToBasket }) => {
   };
 
   const handleAddToBasket = () => {
-    Alert('Steve - this add to basket needs fixing');
+    alert('Steve - this add to basket needs fixing');
   };
 
   return (
@@ -27,11 +26,10 @@ const ProductItem = ({ product, addToBasket }) => {
       <div
         className={`product-card ${!product.id ? 'product-loading' : ''}`}
         style={{
-          border: product && itemOnBasket ? '1px solid #a6a5a5' : '',
-          boxShadow: product && itemOnBasket ? '0 10px 15px rgba(0, 0, 0, .07)' : 'none'
+          border: '',
+          boxShadow: 'none'
         }}
       >
-        {itemOnBasket && <CheckOutlined className="fa fa-check product-card-check" />}
         <div
           className="product-card-content"
           onClick={onClickItem}

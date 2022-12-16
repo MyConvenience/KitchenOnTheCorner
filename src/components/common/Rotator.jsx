@@ -1,6 +1,7 @@
 import {Carousel, Card, Placeholder} from 'react-bootstrap';
 import {useContent} from '@/hooks';
 import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 const Rotator = () => {
   const {rotatorPages} = useContent();
@@ -15,12 +16,12 @@ const Rotator = () => {
                   {(p.isOverlay 
                   ? <Card.ImgOverlay>
                         <Card.Title>{p.title}</Card.Title>
-                        <Card.Text><ReactMarkdown>{p.body}</ReactMarkdown></Card.Text>
+                        <Card.Text><ReactMarkdown children={p.body} remarkPlugins={[remarkGfm]}/></Card.Text>
                     </Card.ImgOverlay> 
                   : <Card.Body>
                       <Card.Title>{p.title}</Card.Title>
                       <Card.Subtitle>{p.subtitle}</Card.Subtitle>
-                      <Card.Text><ReactMarkdown>{p.body}</ReactMarkdown></Card.Text>
+                      <Card.Text><ReactMarkdown children={p.body} remarkPlugins={[remarkGfm]}/></Card.Text>
                   </Card.Body>)}
               </Card>
           </Carousel.Item>)}
