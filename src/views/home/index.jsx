@@ -11,51 +11,9 @@ const Home = () => {
   useDocumentTitle("KOTC | Home");
   useScrollTop();
 
-  const { featuredProducts, fetchFeaturedProducts, isLoading: isLoadingFeatured, error: errorFeatured } = useFeaturedProducts(6);
-  const { recommendedProducts, fetchRecommendedProducts, isLoading: isLoadingRecommended, error: errorRecommended } = useRecommendedProducts(6);
-
   return (
     <main className="content">
-      <div className="home">
-        <Rotator />
-
-        <div className="display">
-          <div className="display-header">
-            <h1>{`Featured Products - ${(featuredProducts || []).length}`}</h1>
-            <Link to={FEATURED_PRODUCTS}>See All</Link>
-          </div>
-          {errorFeatured && !isLoadingFeatured ? (
-            <MessageDisplay
-              message={errorFeatured}
-              action={fetchFeaturedProducts}
-              buttonLabel="Try Again"
-            />
-          ) : (
-            <ProductShowcaseGrid
-              products={featuredProducts}
-              skeletonCount={6}
-            />
-          )}
-        </div>
-        <div className="display">
-          <div className="display-header">
-            <h1>Recommended Products</h1>
-            <Link to={RECOMMENDED_PRODUCTS}>See All</Link>
-          </div>
-          {errorRecommended && !isLoadingRecommended ? (
-            <MessageDisplay
-              message={errorRecommended}
-              action={fetchRecommendedProducts}
-              buttonLabel="Try Again"
-            />
-          ) : (
-            <ProductShowcaseGrid
-              products={recommendedProducts}
-              skeletonCount={6}
-            />
-          )}
-        </div>
-      </div>
+      <Rotator/>
     </main>
   );
 };

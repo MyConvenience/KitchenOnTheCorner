@@ -74,7 +74,7 @@ h6 {
   min-height: 100vh;
   position: relative;
   padding: $top $pad-desktop;
-  display: flex;
+  display: flexbox;
   animation: fadeIn .5s ease;
 
   @media (max-width: $mobile) {
