@@ -13,7 +13,7 @@ const Home = () => {
 
   return (
     <main className="content">
-      
+      <Rotator/>
     </main>
   );
 };

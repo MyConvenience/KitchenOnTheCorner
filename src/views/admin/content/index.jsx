@@ -1,10 +1,10 @@
 /* eslint-disable react/jsx-props-no-spreading */
-import { Boundary } from '@/components/common';
+import { Boundary, Rotator } from '@/components/common';
 import { useContent, useDocumentTitle, useScrollTop } from '@/hooks';
 import React, {useState, useEffect} from 'react';
 import { useSelector } from 'react-redux';
 import { HashRouter, withRouter } from 'react-router-dom';
-import {ListGroup, Button, ButtonGroup, Carousel, Card} from 'react-bootstrap';
+import {ListGroup, Button, ButtonGroup} from 'react-bootstrap';
 import { FileProtectOutlined } from '@ant-design/icons';
 import MDEditor from '@uiw/react-md-editor';
 import ReactMarkdown from 'react-markdown';
@@ -77,25 +77,8 @@ const Content = () => {
   return (
     <Boundary>
       <h1>Administer Site Content</h1>
-      <Carousel activeIndex={index} interval={null} onSelect={(selectedIndex, e) => setIndex(selectedIndex)}>
-          {rotatorPages.map(p => 
-            <Carousel.Item key={p.name}>
-                <Card>
-                  {(p.header || '').length > 0 ? <Card.Header>{p.header}</Card.Header> : null}                  
-                  {(p.image || '').length > 0 ? <Card.Img className="rotator-image" variant="left" src={p.image}/> : null}
-                  {(p.isOverlay 
-                  ? <Card.ImgOverlay>
-                        <Card.Title>{p.title}</Card.Title>
-                        <Card.Text><ReactMarkdown>{p.body}</ReactMarkdown></Card.Text>
-                    </Card.ImgOverlay> 
-                  : <Card.Body>
-                      <Card.Title>{p.title}</Card.Title>
-                      <Card.Subtitle>{p.subtitle}</Card.Subtitle>
-                      <Card.Text><ReactMarkdown>{p.body}</ReactMarkdown></Card.Text>
-                  </Card.Body>)}
-              </Card>
-          </Carousel.Item>)}
-      </Carousel>      <hr/>      
+      <Rotator showActiveOnly={false} editCallback={(index) => setSelected(rotatorPages[index])}/>
+      <hr/>      
       <ButtonGroup>
         <Button variant="success" onClick={() =>addPanel()}>Add Panel</Button>
         <Button variant="warning" onClick={() => setSelected(rotatorPages[index])}>Edit Panel</Button>
