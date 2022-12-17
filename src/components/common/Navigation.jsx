@@ -101,7 +101,7 @@ const Navigation = () => {
               >
 
                 <Badge count={store.basketLength}>
-                  <ShoppingOutlined style={{ fontSize: '2.4rem' }} />
+                  <ShoppingOutlined style={{ fontSize: '2.4rem', color: 'black' }} />
                 </Badge>
               </button>
             )}
