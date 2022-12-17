@@ -2,22 +2,21 @@ import { useDidMount } from '@/hooks';
 import { useEffect, useState } from 'react';
 import firebase from '@/services/firebase';
 
-const useFeaturedProducts = (itemsCount) => {
-  const [featuredProducts, setFeaturedProducts] = useState([]);
+const usePopularProducts = (itemsCount = 12) => {
+  const [popularProducts, setPopularProducts] = useState([]);
   const [isLoading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const didMount = useDidMount(true);
 
-  const fetchFeaturedProducts = async (itemsCount) => {
+  const fetchPopularProducts = async () => {
     try {
       setLoading(true);
       setError('');
 
-      const items = await firebase.getFeaturedProducts(itemsCount);
+      const items = await firebase.getPopularProducts(itemsCount);
       
-      setFeaturedProducts(items);
+      setPopularProducts(items);
       setLoading(false);
-
     } catch (e) {
       if (didMount) {
         setError('Failed to fetch featured products');
@@ -27,14 +26,14 @@ const useFeaturedProducts = (itemsCount) => {
   };
 
   useEffect(() => {
-    if (featuredProducts.length === 0 && didMount) {
-      fetchFeaturedProducts(itemsCount);
+    if (popularProducts.length === 0 && didMount) {
+      fetchPopularProducts(itemsCount);
     }
   }, []);
 
   return {
-    featuredProducts, fetchFeaturedProducts, isLoading, error
+    popularProducts, fetchPopularProducts, isLoading, error
   };
 };
 
-export default useFeaturedProducts;
+export default usePopularProducts;

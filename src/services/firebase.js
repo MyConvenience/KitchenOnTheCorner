@@ -267,6 +267,27 @@ class Firebase {
     }
   }
 
+  getMostPopularProducts = async (itemsCount = 12) => {
+    try
+    {      
+      const productsRef = collection(this.db, "products");
+      const fq = query(productsRef,
+        orderBy("popularity", "desc"),
+        limit(itemsCount));
+  
+      const snapshot = await getDocs(fq);
+      let results = [];
+      snapshot.forEach((doc) => {
+        results.push(doc.data());
+      });
+      return results;
+    }
+    catch (err) {
+      console.error(err);
+    }
+  }
+
+
   getFeaturedProducts = async (itemsCount = 12) => {
     try
     {      
@@ -279,9 +300,9 @@ class Firebase {
       const snapshot = await getDocs(fq);
       let results = [];
       snapshot.forEach((doc) => {
-        // results.push({id: doc.id, data: doc.data()});
         results.push(doc.data());
       });
+
       return results;
     }
     catch (err) {
