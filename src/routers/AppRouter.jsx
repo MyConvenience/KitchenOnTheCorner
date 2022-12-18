@@ -1,6 +1,7 @@
 import { Basket } from '@/components/basket';
 import { Footer, Navigation } from '@/components/common';
 import * as ROUTES from '@/constants/routes';
+import {STRIPE_PUBLIC_KEY} from '@/constants/constants';
 import { createBrowserHistory } from 'history';
 import React from 'react';
 import { Route, Router, Switch } from 'react-router-dom';
@@ -8,16 +9,24 @@ import * as view from '@/views';
 import AdminRoute from './AdminRoute';
 import ClientRoute from './ClientRoute';
 import PublicRoute from './PublicRoute';
+import { Elements,
+  useStripe,
+  useElements,
+} from '@stripe/react-stripe-js';
+import {loadStripe} from '@stripe/stripe-js';
 
 // Revert back to history v4.10.0 because
 // v5.0 breaks navigation
 export const history = createBrowserHistory();
+export const stripe = loadStripe(STRIPE_PUBLIC_KEY);
 
 const AppRouter = () => (
   <Router history={history}>
     <>
       <Navigation />
       <Basket />
+      <Elements stripe={stripe}>
+
       <Switch>
         <Route
           component={view.Search}
@@ -114,6 +123,7 @@ const AppRouter = () => (
         />
         <PublicRoute component={view.PageNotFound} />
       </Switch>
+      </Elements>
       <Footer />
     </>
   </Router>
