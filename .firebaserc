@@ -1,5 +1,7 @@
 {
   "projects": {
-    "default": "salinaka-ecommerce"
-  }
+    "dev": "kitchenonthecorner-bfc5c"
+  },
+  "targets": {},
+  "etags": {}
 }
