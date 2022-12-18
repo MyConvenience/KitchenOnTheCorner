@@ -103,7 +103,39 @@ class Firebase {
     this.auth.setPersistence(app.auth.Auth.Persistence.LOCAL);
 
   // // CONTENT ACTIONS --------------
-  getRotatorPanels = async (activeOnly = 1, itemsCount = 12) => {
+  getCategoryProducts = async (name) => {
+    const catsRef = collection(this.db, "categories");
+    const docQuery = query(catsRef, where("name", "==", name));
+    const docSnap = await getDocs(docQuery);
+  
+    let match = null;
+    docSnap.forEach(doc => match = doc.data());
+
+    const {products} = await this.searchProducts(match.keywords.join(" "));
+    return products;
+  }
+
+  getCategories = async (activeOnly = true, itemsCount = 12) => {
+    try
+    {      
+      const contentRef = collection(this.db, "categories");
+      const fq = activeOnly 
+        ? query(contentRef, where("isActive", "==", true), orderBy("popularity", "asc"), limit(itemsCount))
+        : query(contentRef, orderBy("popularity", "asc"), limit(itemsCount));
+  
+      const snapshot = await getDocs(fq);
+      let results = [];
+      snapshot.forEach((doc) => {
+        results.push(doc.data());
+      });
+      return results;
+    }
+    catch (err) {
+      console.error(err);
+    }
+  }
+
+  getRotatorPanels = async (activeOnly = true, itemsCount = 12) => {
     try
     {      
       const contentRef = collection(this.db, "rotator_pages");
@@ -114,7 +146,6 @@ class Firebase {
       const snapshot = await getDocs(fq);
       let results = [];
       snapshot.forEach((doc) => {
-        // results.push({id: doc.id, data: doc.data()});
         results.push(doc.data());
       });
       return results;

@@ -1,13 +1,17 @@
 /* eslint-disable react/jsx-props-no-spreading */
 import { AppliedFilters, ProductGrid, ProductList } from '@/components/product';
-import { useDocumentTitle, useScrollTop } from '@/hooks';
+import { useDocumentTitle, useScrollTop, useCategories } from '@/hooks';
 import React from 'react';
 import { shallowEqual, useSelector } from 'react-redux';
 import { selectFilter } from '@/selectors/selector';
+import { Card, Row, Col } from 'react-bootstrap';
+import { useHistory } from 'react-router';
 
 const Shop = () => {
+  const history = useHistory();
   useDocumentTitle('Shop | KOTC');
   useScrollTop();
+  const {categories} = useCategories();
 
   const store = useSelector((state) => ({
     filteredProducts: selectFilter(state.products.items, state.filter),
@@ -16,14 +20,25 @@ const Shop = () => {
     isLoading: state.app.loading
   }), shallowEqual);
 
+  const renderCategory = (category) => {
+    const url = `/category/${category.name}`;
+
+    return (
+    <Card border="primary" onClick={()=> history.push(url)} style={{ width: '18rem' }}>
+      <Card.Header>Category</Card.Header>
+      <Card.Img src={category.image} alt={`Category: ${category.title}`}/>
+      <Card.ImgOverlay>
+        <Card.Title>{category.title}</Card.Title>
+        <Card.Text>{category.description}</Card.Text>
+      </Card.ImgOverlay>
+  </Card>);
+  }
+
   return (
     <main className="content">
-      <section className="product-list-wrapper">
-        <AppliedFilters filteredProductsCount={store.filteredProducts.length} />
-        <ProductList {...store}>
-          <ProductGrid products={store.filteredProducts} />
-        </ProductList>
-      </section>
+      <Row>
+        {categories.map(renderCategory)}
+      </Row>
     </main>
   );
 };

@@ -4,7 +4,7 @@ import PropType from 'prop-types';
 import React from 'react';
 import {Row, Col} from 'react-bootstrap';
 
-const ProductShowcase = ({ products = [], maxColumns = 4 }) => {
+const ProductShowcase = ({ products, maxColumns }) => {
   return (<Row className='product-display-grid'> 
   {
     products.map((p, index) => (index + 1) % maxColumns === 0
@@ -14,5 +14,9 @@ const ProductShowcase = ({ products = [], maxColumns = 4 }) => {
   </Row>);
 }
 
+ProductShowcase.defaultProps = {
+  products: [],
+  maxColumns: 4
+};
 
 export default ProductShowcase;

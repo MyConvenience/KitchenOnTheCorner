@@ -10,4 +10,5 @@ export { default as useProduct } from './useProduct';
 export { default as useRecommendedProducts } from './useRecommendedProducts';
 export { default as useScrollTop } from './useScrollTop';
 export { default as useContent } from './useContent';
+export { default as useCategories } from './useCategories';
 

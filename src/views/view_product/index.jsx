@@ -164,23 +164,22 @@ const ViewProduct = () => {
               <br />
               <div className="divider" />
               <br />
-                <Form>
-                  <select name="size" value={selectedSize} onChange={({target:{value}}) => setSelectedSize(value)}>
+                <Form>                  
+                  <select name="quantity" value={quantity} onChange={({target:{value}})=> setQuantity(value)}>
+                    <option value={1} label="Gimme One!"/>
+                    <option value={2} label="Gotta Have Two!"/>
+                    <option value={3} label="Three, Please!"/>
+                    <option value={4} label="Score Four!"/>
+                    <option value={5} label="Five!"/>
+                    <option value={6} label="Six!"/>
+                    <option value={7} label="Seven!"/>
+                    <option value={8} label="Eight!"/>
+                    <option value={9} label="Nine!"/>
+                    <option value={10} label="TEN!!"/>
+                    </select>
+                    <select name="size" value={selectedSize} onChange={({target:{value}}) => setSelectedSize(value)}>
                     {product.sizes.map(s => <option key={s.size} value={s.size} label={formatSize(s)}/>)}
                   </select>
-                  <select name="quantity" value={quantity} onChange={({target:{value}})=> setQuantity(value)}>
-                    <option value={1} label="1"/>
-                    <option value={2} label="2"/>
-                    <option value={3} label="3"/>
-                    <option value={4} label="4"/>
-                    <option value={5} label="5"/>
-                    <option value={6} label="6"/>
-                    <option value={7} label="7"/>
-                    <option value={8} label="8"/>
-                    <option value={9} label="9"/>
-                    <option value={10} label="10"/>
-                  </select>
-                  <div>
                     <div>Options</div>
                     {
                       product.options.map(o =>
@@ -188,7 +187,6 @@ const ViewProduct = () => {
                           <input name={o.name} value={o.name} onChange={onCheckChanged} type="checkbox"/>{formatOption(o)}
                         </div>)
                     }
-                  </div>                           
                   <h1>{`Total: ${displayMoney(total)}`}</h1>
                   <button type="submit" className='button button-small' onClick={handleAddToBasket}>
                     Add To Cart
