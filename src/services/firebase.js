@@ -108,11 +108,11 @@ class Firebase {
     const docQuery = query(catsRef, where("name", "==", name));
     const docSnap = await getDocs(docQuery);
   
-    let match = null;
-    docSnap.forEach(doc => match = doc.data());
+    let category = null;
+    docSnap.forEach(doc => category = doc.data());
 
-    const {products} = await this.searchProducts(match.keywords.join(" "));
-    return products;
+    const {products} = await this.searchProductsByKeywords(category.keywords, 500);
+    return { products, category };
   }
 
   getCategories = async (activeOnly = true, itemsCount = 12) => {
@@ -225,7 +225,48 @@ class Firebase {
     });
   };
 
-  searchProducts = (searchKey) => {
+  searchProductsByKeywords = (keywords, resultLimit = 12) => {
+    let didTimeout = false;
+
+    return new Promise((resolve, reject) => {
+      (async () => {
+        const timeout = setTimeout(() => {
+          didTimeout = true;
+          reject(new Error("Request timeout, please try again"));
+        }, 15000);
+
+        try {
+          const productsRef = collection(this.db, "products");
+          const keywordQuery = query(productsRef,            
+                where("keywords", "array-contains-any", keywords),
+                orderBy("name_lower"),
+                orderBy("popularity", "desc"),
+                limit(resultLimit));
+
+          const keywordsSnaps = await getDocs(keywordQuery);
+                    
+          clearTimeout(timeout);
+
+          if (!didTimeout) {
+            let products = [];
+            
+            if (!keywordsSnaps.empty) {
+              keywordsSnaps.forEach((doc) => {
+                products.push(doc.data());
+              });
+            }
+            resolve({ products });
+          }
+        } catch (e) {
+          if (didTimeout) return;
+          reject(e);
+        }
+      })();
+    });
+  };
+  
+
+  searchProducts = (searchKey, resultLimit = 12) => {
     let didTimeout = false;
 
     return new Promise((resolve, reject) => {
@@ -241,14 +282,14 @@ class Firebase {
                 where("keywords", "array-contains-any", searchKey.split(" ")),
                 orderBy("name_lower"),
                 orderBy("popularity", "desc"),
-                limit(12));
+                limit(resultLimit));
 
             const nameQuery = query(productsRef,                          
               where("name_lower", ">=", searchKey),
               where("name_lower", "<=", `${searchKey}\uf8ff`),
               orderBy("name_lower"),
               orderBy("popularity", "desc"),
-              limit(12));
+              limit(resultLimit));
             
           const keywordsSnaps = await getDocs(keywordQuery);
           const namedSnaps = await getDocs(nameQuery);

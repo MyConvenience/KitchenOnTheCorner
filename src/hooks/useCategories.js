@@ -5,6 +5,7 @@ import {useDidMount} from '@/hooks';
 import firebase from '@/services/firebase';
 
 const useCategories = (activeOnly) => {
+  const [category, setCategory] = useState(null);
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
   const [isLoading, setLoading] = useState(false);
@@ -16,8 +17,10 @@ const useCategories = (activeOnly) => {
       setLoading(true);
       setError('');
 
-      const items = await firebase.getCategoryProducts(id);
-      setProducts(items);
+      const {products, category} = await firebase.getCategoryProducts(id);
+      setProducts(products);
+      setCategory(category);
+
       setLoading(false); 
     } catch (e) {
       if (didMount) {
@@ -53,7 +56,7 @@ const useCategories = (activeOnly) => {
   }, []);
 
   return {
-    categories, fetchCategories, fetchCategoryProducts, products, isLoading, error
+    categories, fetchCategories, fetchCategoryProducts, category, products, isLoading, error
   };
 };
 

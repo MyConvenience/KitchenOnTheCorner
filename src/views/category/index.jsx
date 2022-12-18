@@ -5,15 +5,15 @@ import { useCategories } from '@/hooks';
 
 const ViewCategory = () => {
   const { id } = useParams();
-  const {products, fetchCategoryProducts} = useCategories();
+  const {products, fetchCategoryProducts, category} = useCategories();
 
   useEffect(() => {
-    if (products.length === 0) {
+    if (!category) {
       fetchCategoryProducts(id);
     }
   });
 
-  return (<ProductShowcaseGrid maxColumns={4} products={products || []}/>);
+  return (<><h1>{category?.title}</h1><ProductShowcaseGrid maxColumns={4} products={products || []}/></>);
 }
 
 

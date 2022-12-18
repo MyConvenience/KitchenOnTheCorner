@@ -24,7 +24,7 @@ const Shop = () => {
     const url = `/category/${category.name}`;
 
     return (
-    <Card border="primary" onClick={()=> history.push(url)} style={{ width: '18rem' }}>
+    <Card key={category.name} border="primary" onClick={()=> history.push(url)} style={{ width: '25rem' }}>
       <Card.Header>Category</Card.Header>
       <Card.Img src={category.image} alt={`Category: ${category.title}`}/>
       <Card.ImgOverlay>
