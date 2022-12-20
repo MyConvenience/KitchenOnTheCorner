@@ -10,6 +10,7 @@ export const ADMIN_PRODUCTS = '/admin/products';
 export const ADMIN_CONTENT = '/admin/content';
 export const ADMIN_USERS = '/admin/users';
 export const ADD_PRODUCT = '/admin/add';
+export const IMPORT_PRODUCTS = '/admin/products/import';
 export const EDIT_PRODUCT = '/admin/edit';
 export const SEARCH = '/search/:searchKey';
 export const SIGNIN = '/signin';

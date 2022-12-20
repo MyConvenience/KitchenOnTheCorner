@@ -418,10 +418,13 @@ class Firebase {
   addNewProduct = async (product, imageCollection) => {
     let imageRefs = [];
 
-    imageCollection.forEach(async image => {
-      const url = await this.addProductImage(product, image);
-      imageRefs.push(url);
-    });
+    if (imageCollection) {
+      imageCollection.forEach(async image => {
+        const url = await this.addProductImage(product, image);
+        imageRefs.push(url);
+      });  
+    }
+
     product.images = imageRefs;
     console.log('saving product...');
     console.dir(product);

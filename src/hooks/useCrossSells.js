@@ -10,14 +10,16 @@ const useCrossSells = () => {
 
   const fetchSuggestedProducts = async (terms, itemsCount) => {
     try {
-      setLoading(true);
-      setError('');
 
-      const items = await firebase.getCrossSellProducts(terms, itemsCount);
-      console.dir(items);
-      setSuggestedProducts(items);
-      setLoading(false);
-      
+      if (terms && terms.length > 0) {
+        setLoading(true);
+        setError('');
+        
+        const items = await firebase.getCrossSellProducts(terms, itemsCount);
+        console.dir(items);
+        setSuggestedProducts(items);
+        setLoading(false);    
+      }      
     } catch (e) {
       if (didMount) {
         setError('Failed to fetch cross selling products');

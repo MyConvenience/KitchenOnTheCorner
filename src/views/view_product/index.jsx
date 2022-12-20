@@ -43,7 +43,7 @@ const ViewProduct = () => {
     if (product) {
       fetchSuggestedProducts(product.crossSells);
       setSelectedSize(product.sizes[0].size);
-      setSelectedImage(product.images[0]);
+      setSelectedImage(product.image);
       setTotal(product.sizes[0].price);  
     }
   }, [product]);
@@ -71,7 +71,7 @@ const ViewProduct = () => {
       id: generateUUID(),
       productId: product.id, 
       productName: product.name,
-      image: product.images[0],
+      image: product.image,
       size: selectedSize,
       quantity,
       ext_price: total,
@@ -79,7 +79,7 @@ const ViewProduct = () => {
       isRestricted: product.isRestricted
     };
 
-    console.dir(basketItem);
+    // console.dir(basketItem);
     addToBasket(basketItem);    
 };
 
@@ -97,7 +97,6 @@ const ViewProduct = () => {
   const hasMultipleSizes = (product?.sizes || []).length > 1;
   const hasOptions = (product?.options || []).length > 0;
 
-
   const onCheckChanged = ({target:{name, checked}}) => {
     console.log(`${name} checked:${checked}`);
 
@@ -109,6 +108,19 @@ const ViewProduct = () => {
 
   const onQuantityChanged = ({target:{name, value}}) => {
     setQuantity(value);
+  }
+
+  const renderCrossSells = () => {
+    if (product && product.crossSells && product.crossSells.length > 0) {
+      return <div style={{ marginTop: '10rem' }}>
+          <div className="display-header">
+            <h1>May We Suggest...</h1>
+            <Link to={RECOMMENDED_PRODUCTS}>See All</Link>
+          </div>
+          <ProductShowcaseGrid products={suggestedProducts} skeletonCount={3} />
+        </div>;
+    }
+    return null;
   }
 
   return (
@@ -194,21 +206,7 @@ const ViewProduct = () => {
                 </Form>
             </div>
           </div>
-          <div style={{ marginTop: '10rem' }}>
-            <div className="display-header">
-              <h1>May We Suggest...</h1>
-              <Link to={RECOMMENDED_PRODUCTS}>See All</Link>
-            </div>
-            {errorSuggested && !isLoadingSuggested ? (
-              <MessageDisplay
-                message={error}
-                action={fetchSuggestedProducts}
-                buttonLabel="Try Again"
-              />
-            ) : (
-              <ProductShowcaseGrid products={suggestedProducts} skeletonCount={3} />
-            )}
-          </div>
+          {renderCrossSells()}
         </div>
       )}
     </main>
