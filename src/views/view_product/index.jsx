@@ -10,6 +10,7 @@ import { Popover, ButtonGroup, SplitButton, Dropdown, OverlayTrigger, Button, Fo
 import _ from 'lodash';
 import { Formik, Field } from 'formik';
 import { defaultProps } from 'react-select/creatable/dist/react-select.cjs.prod';
+import imageNotFound from '@/images/imageNotFound.jpg';
 
 const ViewProduct = () => {
   const { id } = useParams();
@@ -23,7 +24,7 @@ const ViewProduct = () => {
   useScrollTop();
   useDocumentTitle(`View ${product?.name || 'Item'}`);
 
-  const [selectedImage, setSelectedImage] = useState(product?.image || '');
+  const [selectedImage, setSelectedImage] = useState(product?.image || imageNotFound);
     
   const {
     recommendedProducts,
@@ -39,12 +40,17 @@ const ViewProduct = () => {
     error: errorSuggested
   } = useCrossSells();
 
-  useEffect(() => {
+  useEffect(() => {    
     if (product) {
       fetchSuggestedProducts(product.crossSells);
       setSelectedSize(product.sizes[0].size);
-      setSelectedImage(product.image);
-      setTotal(product.sizes[0].price);  
+      setTotal(product.sizes[0].price);
+
+      if (product.image) {
+        setSelectedImage(product.image);
+      } else if (product.images.length > 0) {
+        setSelectedImage(product.images[0]);
+      }
     }
   }, [product]);
 
@@ -162,11 +168,7 @@ const ViewProduct = () => {
               </div>
             )}
             <div className="product-modal-image-wrapper">
-              <img
-                alt={product.name}
-                className="product-modal-image"
-                src={selectedImage}
-              />
+                <img alt={product.name} className="product-modal-image" src={selectedImage}/>             
             </div>
             <div className="product-modal-details">
               <br />

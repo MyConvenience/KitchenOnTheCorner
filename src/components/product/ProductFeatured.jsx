@@ -4,6 +4,7 @@ import { displayMoney, productSizes } from '@/helpers/utils';
 import React from 'react';
 import Skeleton, { SkeletonTheme } from 'react-loading-skeleton';
 import { useHistory } from 'react-router-dom';
+import imageNotFound from '@/images/imageNotFound.jpg';
 
 const ProductFeatured = ({ product }) => {
   const history = useHistory();
@@ -11,12 +12,12 @@ const ProductFeatured = ({ product }) => {
     history.push(`/product/${product.id}`);
   };
   
+  const image = product?.image || (product?.images.length > 0 ? product.images[0] : imageNotFound);
+
   return (
     <div className="product-display" onClick={onClickItem} role="presentation">
       <div className="product-display-img">
-        {(product.images || []).length > 0 ? (
-          <img alt={product.name} className="product-card-img" src={product.images[0]}/>            
-        ) : <Skeleton width="100%" height="100%" />}
+          <img alt={product.name} className="product-card-img" src={image}/>        
       </div>
       <div className="product-display-details">
         <h2>{product.name}</h2>
