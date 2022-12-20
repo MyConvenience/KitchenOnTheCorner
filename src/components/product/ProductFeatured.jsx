@@ -20,9 +20,9 @@ const ProductFeatured = ({ product }) => {
       </div>
       <div className="product-display-details">
         <h2>{product.name}</h2>
-        <p className="text-subtle text-italic">
-          {(product.sizes || []).map(s => <div>{`${productSizes[s.size]}: ${displayMoney(s.price)}`}</div>)}          
-        </p>
+        <div className="text-subtle text-italic">
+          {(product.sizes || []).map(s => <div key={s.size}>{`${productSizes[s.size]}: ${displayMoney(s.price)}`}</div>)}
+        </div>
       </div>
     </div>
   );

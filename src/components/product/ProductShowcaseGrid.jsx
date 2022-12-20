@@ -3,15 +3,16 @@ import { FeaturedProduct } from '@/components/product';
 import PropType from 'prop-types';
 import React from 'react';
 import {Row, Col} from 'react-bootstrap';
+import _ from 'lodash';
 
 const ProductShowcase = ({ products, maxColumns }) => {
-  return (<Row className='product-display-grid'> 
-  {
-    products.map((p, index) => (index + 1) % maxColumns === 0
-      ?  <><Col className='w-100'/><Col className='col'><FeaturedProduct key={p.productId} product={p}/></Col></>
-      :  <Col className='col'><FeaturedProduct key={p.productId} product={p}/></Col>)
-  }
-  </Row>);
+  return _.chunk(products, maxColumns)
+      .map((row, rowIndex) => 
+          <Row className='product-display-grid' key={`sc${rowIndex}`}>
+            {
+                row.map(p => <Col key={p.productId}><FeaturedProduct product={p}/></Col>)
+            }
+          </Row>);
 }
 
 ProductShowcase.defaultProps = {

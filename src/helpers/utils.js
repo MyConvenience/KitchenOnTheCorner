@@ -21,7 +21,7 @@ export const productSizes = {
   small: '16oz',
   medium: '20oz',
   large: '28oz',
-  each: 'each',
+  each: 'Each',
   four: '4-pack',
   six: '6-Pack',
   eight: '8-Pack',
