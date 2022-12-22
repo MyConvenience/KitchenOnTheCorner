@@ -277,9 +277,11 @@ class Firebase {
         }, 15000);
 
         try {
+          const searchTerms = searchKey.split(" ");
+          const searchTermCount = searchTerms.length;
           const productsRef = collection(this.db, "products");
-          const termsQuery = query(productsRef,            
-                where("search", "array-contains-any", searchKey.split(" ")),
+          const termsQuery = query(productsRef,
+                where("search", "array-contains-any", searchTerms),
                 orderBy("popularity", "desc"),
                 orderBy("name_lower"),
                 limit(resultLimit));
@@ -292,8 +294,11 @@ class Firebase {
             let products = [];
             
             snaps.forEach((doc) => {
-              products.push(doc.data());
-            });
+              const p = doc.data();
+              const allTerms = _.intersection(p.search, searchTerms).length === searchTermCount;
+              if (allTerms)
+                products.push(p);
+          });
 
             resolve({ products });
           }
