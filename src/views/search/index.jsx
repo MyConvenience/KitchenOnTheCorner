@@ -4,12 +4,13 @@ import { Boundary, MessageDisplay } from '@/components/common';
 import { ProductGrid } from '@/components/product';
 import { useDidMount } from '@/hooks';
 import PropType from 'prop-types';
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { setRequestStatus } from '@/redux/actions/miscActions';
 import { searchProduct } from '@/redux/actions/productActions';
 
 const Search = ({ match }) => {
+  const [pageSize, setPageSize] = useState(20);
   const { searchKey } = match.params;
   const dispatch = useDispatch();
   const didMount = useDidMount(true);
@@ -22,7 +23,7 @@ const Search = ({ match }) => {
 
   useEffect(() => {
     if (didMount && !store.isLoading) {
-      dispatch(searchProduct(searchKey));
+      dispatch(searchProduct(searchKey, pageSize ));
     }
   }, [searchKey]);
 

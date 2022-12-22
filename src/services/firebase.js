@@ -278,39 +278,24 @@ class Firebase {
 
         try {
           const productsRef = collection(this.db, "products");
-          const keywordQuery = query(productsRef,            
-                where("keywords", "array-contains-any", searchKey.split(" ")),
-                orderBy("name_lower"),
+          const termsQuery = query(productsRef,            
+                where("search", "array-contains-any", searchKey.split(" ")),
                 orderBy("popularity", "desc"),
+                orderBy("name_lower"),
                 limit(resultLimit));
-
-            const nameQuery = query(productsRef,                          
-              where("name_lower", ">=", searchKey),
-              where("name_lower", "<=", `${searchKey}\uf8ff`),
-              orderBy("name_lower"),
-              orderBy("popularity", "desc"),
-              limit(resultLimit));
             
-          const keywordsSnaps = await getDocs(keywordQuery);
-          const namedSnaps = await getDocs(nameQuery);
-                    
+          const snaps = await getDocs(termsQuery);                    
           clearTimeout(timeout);
 
           if (!didTimeout) {
             let lastKey = null;          
             let products = [];
             
-            if (!keywordsSnaps.empty) {
-              keywordsSnaps.forEach((doc) => {
-                products.push(doc.data());
-              });
-            }
-
-            namedSnaps.forEach((doc) => {
+            snaps.forEach((doc) => {
               products.push(doc.data());
             });
 
-            resolve({ products: _.uniqBy(products, 'id') });
+            resolve({ products });
           }
         } catch (e) {
           if (didTimeout) return;

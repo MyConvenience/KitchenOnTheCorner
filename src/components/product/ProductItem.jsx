@@ -1,10 +1,11 @@
 import { CheckOutlined } from '@ant-design/icons';
 import { ImageLoader } from '@/components/common';
-import { displayMoney, generateUUID } from '@/helpers/utils';
+import { displayMoney, generateUUID, productSizes } from '@/helpers/utils';
 import PropType from 'prop-types';
 import React from 'react';
 import Skeleton, { SkeletonTheme } from 'react-loading-skeleton';
 import { useHistory } from 'react-router-dom';
+import imageNotFound from '@/images/imageNotFound.jpg';
   
 const ProductItem = ({ product, addToBasket }) => {
   const history = useHistory();
@@ -18,11 +19,13 @@ const ProductItem = ({ product, addToBasket }) => {
   };
 
   const handleAddToBasket = () => {
+    const image = product?.image || (product?.images.length > 0 ? product.images[0] : imageNotFound);
+
     const basketItem =  { 
       id: generateUUID(),
       productId: product.id, 
       productName: product.name,
-      image: product.images[0],
+      image: image,
       size: product.sizes[0],
       quantity: 1,
       ext_price: product.sizes[0].price,
@@ -33,40 +36,19 @@ const ProductItem = ({ product, addToBasket }) => {
     addToBasket(basketItem);
   };
 
+  const image = product?.image || (product?.images.length > 0 ? product.images[0] : imageNotFound);
   return (
-    <SkeletonTheme color="#e1e1e1" highlightColor="#f2f2f2">
-      <div
-        className={`product-card ${!product.id ? 'product-loading' : ''}`}
-        style={{
-          border: '',
-          boxShadow: 'none'
-        }}
-      >
-        <div
-          className="product-card-content"
-          onClick={onClickItem}
-          role="presentation"
-        >
-          <div className="product-card-img-wrapper">
-            {product.image ? (
-              <ImageLoader
-                alt={product.name}
-                className="product-card-img"
-                src={product.image}
-              />
-            ) : <Skeleton width="100%" height="90%" />}
-          </div>
-          <div className="product-details">
-            <h5 className="product-card-name text-overflow-ellipsis margin-auto">
-              {product.name || <Skeleton width={80} />}
-            </h5>
-            <p className="product-card-brand">
-              {product.brand || <Skeleton width={60} />}
-            </p>
-            <h4 className="product-card-price">
-              {product.price ? displayMoney(product.price) : <Skeleton width={40} />}
-            </h4>
-          </div>
+    <div className='product-card'>
+      <h2>{product.name}</h2>
+    <div className="product-display" onClick={onClickItem} role="presentation">
+    <div className="product-display-img">
+        <img alt={product.name} className="product-card-img" src={image}/>        
+    </div>
+    <div className="product-display-details">
+      <div className="text-subtle text-italic">
+        {(product.sizes || []).map(s => <div key={s.size}>{`${productSizes[s.size]}: ${displayMoney(s.price)}`}</div>)}
+      </div>     
+    </div>
         </div>
         {product.id && (
           <button
@@ -74,13 +56,10 @@ const ProductItem = ({ product, addToBasket }) => {
             onClick={handleAddToBasket}
             type="button"
           >
-            Add to basket
+            Add to Cart
           </button>
         )}
-
-      </div>
-    </SkeletonTheme>
-  );
+  </div>);
 };
 
 ProductItem.defaultProps = {

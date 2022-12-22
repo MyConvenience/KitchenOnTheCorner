@@ -91,19 +91,23 @@ const ImportProducts = () => {
 
   const performImport = () => {
     const products = importLines.filter(x => x.isValid).map(item => {
+      const lowerName = item.name.toLowerCase();
+      const keywords = item.keywords.split(" ");
+
       return {
-        id: slugify(item.name, {lower: true}),
+        id: slugify(lowerName, {lower: true}),
         name: item.name,
-        name_lower: item.name.toLowerCase(),
+        name_lower: lowerName,
         dateAdded: new Date().getTime(),
         description: '',
         upc: item.upc,
         isRestricted: item.isRestricted ? 21 : 0,
         isTaxable: item.isTaxable,
-        keywords: item.keywords.split(" "),
+        keywords: keywords,
         crossSell: [],
+        search: _.union(keywords, lowerName.split(" ")),
         image: null,
-        imageUrl: null,
+        images: [],
         isFeatured: false,
         popularity: 0,
         isRecommended: false,
