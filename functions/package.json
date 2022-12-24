@@ -1,6 +1,6 @@
 {
-  "name": "stripe-functions",
-  "description": "Stripe Firebase Functions",
+  "name": "kotc-functions",
+  "description": "Firebase Server Functions",
   "dependencies": {
     "@google-cloud/logging": "^7.3.0",
     "firebase-admin": "^11.2.0",

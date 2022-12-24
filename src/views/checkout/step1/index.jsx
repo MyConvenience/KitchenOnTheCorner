@@ -5,15 +5,21 @@ import { displayMoney } from '@/helpers/utils';
 import { useDocumentTitle, useScrollTop } from '@/hooks';
 import PropType from 'prop-types';
 import React from 'react';
-import { useDispatch } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import { useHistory } from 'react-router-dom';
 import { StepTracker } from '../components';
-import withCheckout from '../hoc/withCheckout';
+// import withCheckout from '../hoc/withCheckout';
+import firebase from '@/services/firebase';
 
-import { CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
+// import { CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
 
 
-const OrderSummary = ({ basket, subtotal }) => {
+const OrderSummary = () => {
+  const state = useSelector((store) => ({
+    basket: store.basket,
+    profile: store.profile
+  }));
+
   useDocumentTitle('Check Out Step 1 | KOTC');
   useScrollTop();
   const dispatch = useDispatch();
@@ -21,26 +27,17 @@ const OrderSummary = ({ basket, subtotal }) => {
   const onClickPrevious = () => history.push('/');
   const onClickNext = () => history.push(CHECKOUT_STEP_2);
 
-  const stripe = useStripe();
-  const elements = useElements();
+  //const stripe = useStripe();
+  //const elements = useElements();
+  const subtotal = 9;
 
   const onPay = async (event) => {
     event.preventDefault();
 
-    if (elements == null) {
-      return;
-    }
-
-    const {error, paymentMethod} = await stripe.createPaymentMethod({
-      type: 'card',
-      card: elements.getElement(CardElement),
-    });
-    debugger;
+    firebase.createStripeCheckout({});
   }
 
-
-
-  if (basket?.length === 0) {
+  if (state.basket?.length === 0) {
     return <h1>Your basket is empty</h1>;
   }
   
@@ -52,9 +49,9 @@ const OrderSummary = ({ basket, subtotal }) => {
           <span className="d-block text-center">Review items in your basket.</span>
           <br />
           <div className="checkout-items">
-            {basket.map((product) => (
+            {state.basket.map((product) => (
               <BasketItem
-                basket={basket}
+                basket={state.basket}
                 dispatch={dispatch}
                 key={product.id}
                 product={product}
@@ -66,7 +63,6 @@ const OrderSummary = ({ basket, subtotal }) => {
             <p className="basket-total-title">Subtotal:</p>
             <h2 className="basket-total-amount">{displayMoney(subtotal)}</h2>
           </div>
-          <CardElement/>
           <br />
           <div className="checkout-shipping-action">
             <button
@@ -80,7 +76,6 @@ const OrderSummary = ({ basket, subtotal }) => {
             </button>
             <button
               className="button"
-              disabled={!stripe || !elements}
               onClick={onPay}
               type="submit"
             >
@@ -92,9 +87,5 @@ const OrderSummary = ({ basket, subtotal }) => {
   );
 };
 
-OrderSummary.propTypes = {
-  basket: PropType.arrayOf(PropType.object).isRequired,
-  subtotal: PropType.number.isRequired
-};
 
-export default withCheckout(OrderSummary);
+export default OrderSummary;

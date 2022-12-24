@@ -1,17 +1,20 @@
 import { initializeApp } from 'firebase/app';
+import { getFunctions, httpsCallable } from 'firebase/functions';
 import { getStorage, ref, uploadBytes, getDownloadURL, listAll } from 'firebase/storage';
 import { getAuth, signOut, signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth';
 import { getFirestore, collection, doc, updateDoc, getDoc, getDocs, setDoc, query, where, getCountFromServer, limit, startAfter, orderBy  } from 'firebase/firestore';
+import {loadStripe} from '@stripe/stripe-js';
 import firebaseConfig from "./config";
 import slugify from 'slugify';
 import { FileImageFilled } from '@ant-design/icons';
 import { all } from 'redux-saga/effects';
 import _ from 'lodash';
+import { STRIPE_PUBLIC_KEY } from '@/constants/constants';
 
 class Firebase {
   constructor() {
     const app = initializeApp(firebaseConfig);
-
+    this.functions = getFunctions(app);
     this.storage = getStorage(app);
     this.auth = getAuth(app);
     this.db = getFirestore(app);
@@ -95,12 +98,22 @@ class Firebase {
           reject(new Error("Auth State Changed failed"));
         }
       });
-    });d
+    });
 
   saveBasketItems = (items, userId) => updateDoc(doc(this.db, "users", userId), {basket: items});
   
   setAuthPersistence = () =>
     this.auth.setPersistence(app.auth.Auth.Persistence.LOCAL);
+
+    //  CHECKOUT ACTIONS
+  createStripeCheckout = async (cart) => {
+    const stripeCheckout = httpsCallable(this.functions, 'createStripeCheckout');
+    const {data:{id}} = await stripeCheckout(cart);
+    
+    const stripe = await loadStripe(STRIPE_PUBLIC_KEY);
+    debugger;
+    stripe.redirectToCheckout({sessionId: id});
+  }
 
   // // CONTENT ACTIONS --------------
   getCategoryProducts = async (name) => {

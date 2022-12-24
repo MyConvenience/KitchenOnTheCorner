@@ -36,9 +36,38 @@ const logging = new Logging({
 });
 
 const { Stripe } = require('stripe');
-const stripe = new Stripe(functions.config().stripe.secret, {
-  apiVersion: '2020-08-27',
+const _stripe = new Stripe(functions.config().stripe.secret);
+
+/* Checkout */
+exports.createStripeCheckout = functions.https.onCall(async (data, context) => {
+    const session = await _stripe.checkout.sessions.create({
+      payment_method_types: ["card"],
+      mode: "payment",
+      success_url: "http://localhost:3000/auth/success",
+      cancel_url: "http://localhost:3000/auth/cancel",
+      shipping_address_collection: {
+        allowed_countries: ["US"],
+      },
+      line_items: [
+        {
+          quantity: 1,
+          price_data: {
+            currency: "usd",
+            unit_amount: (100) * 100, // 10000 = 100 USD
+            product_data: {
+              name: "New camera",
+            },
+          },
+        },
+      ],
+    });
+
+    return {
+      id: session.id,
+    };
 });
+
+
 
 /**
  * When a user is created, create a Stripe customer object for them.
@@ -46,8 +75,8 @@ const stripe = new Stripe(functions.config().stripe.secret, {
  * @see https://stripe.com/docs/payments/save-and-reuse#web-create-customer
  */
 exports.createStripeCustomer = functions.auth.user().onCreate(async (user) => {
-  const customer = await stripe.customers.create({ email: user.email });
-  const intent = await stripe.setupIntents.create({
+  const customer = await _stripe.customers.create({ email: user.email });
+  const intent = await _stripe.setupIntents.create({
     customer: customer.id,
   });
   await admin.firestore().collection('stripe_customers').doc(user.uid).set({
@@ -66,12 +95,12 @@ exports.addPaymentMethodDetails = functions.firestore
   .onCreate(async (snap, context) => {
     try {
       const paymentMethodId = snap.data().id;
-      const paymentMethod = await stripe.paymentMethods.retrieve(
+      const paymentMethod = await _stripe.paymentMethods.retrieve(
         paymentMethodId
       );
       await snap.ref.set(paymentMethod);
       // Create a new SetupIntent so the customer can add a new method next time.
-      const intent = await stripe.setupIntents.create({
+      const intent = await _stripe.setupIntents.create({
         customer: `${paymentMethod.customer}`,
       });
       await snap.ref.parent.parent.set(
@@ -106,7 +135,7 @@ exports.createStripePayment = functions.firestore
       // Create a charge using the pushId as the idempotency key
       // to protect against double charges.
       const idempotencyKey = context.params.pushId;
-      const payment = await stripe.paymentIntents.create(
+      const payment = await _stripe.paymentIntents.create(
         {
           amount,
           currency,
@@ -141,7 +170,7 @@ exports.confirmStripePayment = functions.firestore
   .document('stripe_customers/{userId}/payments/{pushId}')
   .onUpdate(async (change, context) => {
     if (change.after.data().status === 'requires_confirmation') {
-      const payment = await stripe.paymentIntents.confirm(
+      const payment = await _stripe.paymentIntents.confirm(
         change.after.data().id
       );
       change.after.ref.set(payment);
@@ -154,7 +183,7 @@ exports.confirmStripePayment = functions.firestore
 exports.cleanupUser = functions.auth.user().onDelete(async (user) => {
   const dbRef = admin.firestore().collection('stripe_customers');
   const customer = (await dbRef.doc(user.uid).get()).data();
-  await stripe.customers.del(customer.customer_id);
+  await _stripe.customers.del(customer.customer_id);
   // Delete the customers payments & payment methods in firestore.
   const batch = admin.firestore().batch();
   const paymetsMethodsSnapshot = await dbRef
