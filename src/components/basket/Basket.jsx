@@ -1,7 +1,7 @@
 /* eslint-disable max-len */
 import { BasketItem, BasketToggle } from '@/components/basket';
 import { Boundary, Modal } from '@/components/common';
-import { CHECKOUT_STEP_1 } from '@/constants/routes';
+import { CHECKOUT } from '@/constants/routes';
 import firebase from '@/services/firebase';
 import { calculateTotal, displayMoney } from '@/helpers/utils';
 import { useDidMount, useModal } from '@/hooks';
@@ -21,22 +21,10 @@ const Basket = () => {
   const dispatch = useDispatch();
   const didMount = useDidMount();
 
-  useEffect(() => {
-    if (didMount && firebase.auth.currentUser && basket.length !== 0) {
-      firebase.saveBasketItems(basket, firebase.auth.currentUser.uid)
-        .then(() => {
-          console.log('Item saved to basket');
-        })
-        .catch((e) => {
-          console.log(e);
-        });
-    }
-  }, [basket.length]);
-
   const onCheckOut = () => {
     if ((basket.length !== 0 && user)) {
       document.body.classList.remove('is-basket-open');
-      history.push(CHECKOUT_STEP_1);
+      history.push(CHECKOUT);
     } else {
       onOpenModal();
     }
@@ -45,7 +33,7 @@ const Basket = () => {
   const onSignInClick = () => {
     onCloseModal();
     document.body.classList.remove('basket-open');
-    history.push(CHECKOUT_STEP_1);
+    history.push(CHECKOUT);
   };
 
   const onClearBasket = () => {

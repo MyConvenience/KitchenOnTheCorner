@@ -85,16 +85,8 @@ const AppRouter = () => (
           path={ROUTES.ACCOUNT_EDIT}
         />
         <PublicRoute
-          component={view.CheckOutStep1}
-          path={ROUTES.CHECKOUT_STEP_1}
-        />
-        <PublicRoute
-          component={view.CheckOutStep2}
-          path={ROUTES.CHECKOUT_STEP_2}
-        />
-        <PublicRoute
-          component={view.CheckOutStep3}
-          path={ROUTES.CHECKOUT_STEP_3}
+          component={view.Checkout}
+          path={ROUTES.CHECKOUT}
         />
         <AdminRoute
           component={view.Dashboard}

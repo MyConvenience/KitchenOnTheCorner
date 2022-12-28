@@ -1,13 +1,12 @@
 import { ArrowRightOutlined, ShopOutlined } from '@ant-design/icons';
 import { BasketItem } from '@/components/basket';
-import { CHECKOUT_STEP_2 } from '@/constants/routes';
 import { displayMoney } from '@/helpers/utils';
-import { useDocumentTitle, useScrollTop } from '@/hooks';
+import { useDocumentTitle, useScrollTop, useStripe } from '@/hooks';
 import PropType from 'prop-types';
-import React from 'react';
+import React, {useState} from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useHistory } from 'react-router-dom';
-import { StepTracker } from '../components';
+import { StepTracker } from './components';
 // import withCheckout from '../hoc/withCheckout';
 import firebase from '@/services/firebase';
 
@@ -20,21 +19,36 @@ const OrderSummary = () => {
     profile: store.profile
   }));
 
-  useDocumentTitle('Check Out Step 1 | KOTC');
+  useDocumentTitle('Checkout | KOTC');
   useScrollTop();
+  const [emailAddress, setEmailAddress] = useState(state?.profile?.email)
   const dispatch = useDispatch();
   const history = useHistory();
-  const onClickPrevious = () => history.push('/');
-  const onClickNext = () => history.push(CHECKOUT_STEP_2);
-
+  const {stripe, createCheckout } = useStripe();
+  
   //const stripe = useStripe();
   //const elements = useElements();
   const subtotal = 9;
 
+  const onPayLater = async (event) => {
+    event.preventDefault();
+    const order = {
+    };
+  }
+
+  const isRestricted = () => basket.filter(x => x.isRestricted > 0).length;
+
+  const renderPayButton = () => {
+    return isRestricted && false
+    ? <h2>Your purchase requires age verification. Please provide a valid ID at order pickup</h2> 
+    : <button className="button" onClick={onPay} type="submit">Pay Now</button>
+  }
+
   const onPay = async (event) => {
     event.preventDefault();
 
-    firebase.createStripeCheckout({});
+    const session = await createCheckout({});
+    stripe.redirectToCheckout(session);
   }
 
   if (state.basket?.length === 0) {
@@ -43,11 +57,18 @@ const OrderSummary = () => {
   
   return (
     <div className="checkout">
-      <StepTracker current={1} />
       <div className="checkout-step-1">
           <h3 className="text-center">Order Summary</h3>
           <span className="d-block text-center">Review items in your basket.</span>
           <br />
+          <ul>
+            <li>You may select a time or ASAP</li>
+            <li>If your cart has age-restricted items, you may order but cannot pay</li>
+            <li>If you are logged in, your email will be sent to Stripe as your user name</li>
+            <li>If you are not logged in, you must provide an email address (you may register after providing an email via Stripe checkout)</li>
+            <li>Hide 'Pay Now' if restricted items are in the cart</li>
+            <li>Add 'Pay Later' which just creates the order</li>
+          </ul>
           <div className="checkout-items">
             {state.basket.map((product) => (
               <BasketItem
@@ -65,22 +86,8 @@ const OrderSummary = () => {
           </div>
           <br />
           <div className="checkout-shipping-action">
-            <button
-              className="button button-muted"
-              onClick={onClickPrevious}
-              type="button"
-            >
-              <ShopOutlined />
-              &nbsp;
-              Continue Shopping
-            </button>
-            <button
-              className="button"
-              onClick={onPay}
-              type="submit"
-            >
-              Pay Now
-            </button>
+              {renderPayButton()}
+              <button className="button" disabled={!!emailAddress} onClick={onPayLater} type="submit">Place My Order</button>
           </div>
       </div>
     </div>

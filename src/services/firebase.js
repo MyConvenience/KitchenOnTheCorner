@@ -3,13 +3,11 @@ import { getFunctions, httpsCallable } from 'firebase/functions';
 import { getStorage, ref, uploadBytes, getDownloadURL, listAll } from 'firebase/storage';
 import { getAuth, signOut, signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth';
 import { getFirestore, collection, doc, updateDoc, getDoc, getDocs, setDoc, query, where, getCountFromServer, limit, startAfter, orderBy  } from 'firebase/firestore';
-import {loadStripe} from '@stripe/stripe-js';
 import firebaseConfig from "./config";
 import slugify from 'slugify';
 import { FileImageFilled } from '@ant-design/icons';
 import { all } from 'redux-saga/effects';
 import _ from 'lodash';
-import { STRIPE_PUBLIC_KEY } from '@/constants/constants';
 
 class Firebase {
   constructor() {
@@ -108,11 +106,13 @@ class Firebase {
     //  CHECKOUT ACTIONS
   createStripeCheckout = async (cart) => {
     const stripeCheckout = httpsCallable(this.functions, 'createStripeCheckout');
+
+    // Steve - TODO: Make the server look up the prices again
     const {data:{id}} = await stripeCheckout(cart);
     
-    const stripe = await loadStripe(STRIPE_PUBLIC_KEY);
-    debugger;
-    stripe.redirectToCheckout({sessionId: id});
+    return {
+      sessionId: id
+    };
   }
 
   // // CONTENT ACTIONS --------------

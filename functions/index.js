@@ -39,32 +39,54 @@ const { Stripe } = require('stripe');
 const _stripe = new Stripe(functions.config().stripe.secret);
 
 /* Checkout */
-exports.createStripeCheckout = functions.https.onCall(async (data, context) => {
-    const session = await _stripe.checkout.sessions.create({
-      payment_method_types: ["card"],
-      mode: "payment",
-      success_url: "http://localhost:3000/auth/success",
-      cancel_url: "http://localhost:3000/auth/cancel",
-      shipping_address_collection: {
-        allowed_countries: ["US"],
-      },
-      line_items: [
-        {
-          quantity: 1,
-          price_data: {
-            currency: "usd",
-            unit_amount: (100) * 100, // 10000 = 100 USD
-            product_data: {
-              name: "New camera",
-            },
+exports.createStripeCheckoutForUser = functions.https.onCall(async (userId, context) => {
+  const session = await _stripe.checkout.sessions.create({
+    payment_method_types: ["card"],
+    mode: "payment",
+    success_url: "http://localhost:3000/auth/success",
+    cancel_url: "http://localhost:3000/auth/cancel",
+    line_items: [
+      {
+        quantity: 1,
+        price_data: {
+          currency: "usd",
+          unit_amount: (100) * 100, // 10000 = 100 USD
+          product_data: {
+            name: "New camera",
           },
         },
-      ],
-    });
+      },
+    ],
+  });
 
-    return {
-      id: session.id,
-    };
+  return {
+    id: session.id,
+  };
+});
+
+exports.createAnonymousStripeCheckout = functions.https.onCall(async (cart, context) => {
+  const session = await _stripe.checkout.sessions.create({
+    payment_method_types: ["card"],
+    mode: "payment",
+    success_url: "http://localhost:3000/auth/success",
+    cancel_url: "http://localhost:3000/auth/cancel",
+    line_items: [
+      {
+        quantity: 1,
+        price_data: {
+          currency: "usd",
+          unit_amount: (100) * 100, // 10000 = 100 USD
+          product_data: {
+            name: "New camera",
+          },
+        },
+      },
+    ],
+  });
+
+  return {
+    id: session.id,
+  };
 });
 
 
