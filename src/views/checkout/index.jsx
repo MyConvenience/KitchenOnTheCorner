@@ -47,7 +47,10 @@ const OrderSummary = () => {
   const onPay = async (event) => {
     event.preventDefault();
 
-    const session = await createCheckout({});
+    const session = await createCheckout({
+      email: 'steve.gaetjens@roadrunner.com',
+      items: state.basket
+    });
     stripe.redirectToCheckout(session);
   }
 

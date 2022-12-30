@@ -37,16 +37,57 @@ const logging = new Logging({
 
 const { Stripe } = require('stripe');
 const _stripe = new Stripe(functions.config().stripe.secret);
+const _ = require('lodash');
+
+function createLineItems(items) {
+  const taxRate = {
+    display_name: 'Sales Tax',
+    percentage: 6.75,
+    state: 'OH',
+    jurisdiction: 'Geauga County',    
+  };
+  
+  return items.map(item => {
+    const product = admin.firestore().collection('products').doc(item.productId);
+    const itemTotal = product.sizes[item.size.size].price;
+    const optionTotal = item.options || false 
+      ?  _.sum(Object.keys(options)
+            .map(optionName =>  { return { ...product.options.filter(o => o.name === optionName)[0], checked: options[optionName]}})
+            .filter(x => x.checked)
+            .map(x => x.price 
+              ? x.price 
+              : x.margin ? itemTotal * x.margin : 0))
+        : 0;
+    const unitPrice = itemTotal + optionTotal;
+
+    return {
+        quantity: item.quantity,
+        metadata: { productId: item.productId, cartId: item.id },
+        price_data: {
+          currency: "usd",
+          unit_amount: Math.round(unitPrice * 100),
+          product_data: {
+            name: product.name,
+          },
+          tax_rates: [
+            product.isTaxable ? taxRate : null
+          ]
+        }
+      };
+  }); 
+}
 
 /* Checkout */
-exports.createStripeCheckoutForUser = functions.https.onCall(async (userId, context) => {
-  const session = await _stripe.checkout.sessions.create({
-    payment_method_types: ["card"],
-    mode: "payment",
-    success_url: "http://localhost:3000/auth/success",
-    cancel_url: "http://localhost:3000/auth/cancel",
-    line_items: [
-      {
+exports.createStripeCheckout = functions.https.onCall(async ({email, items}, context) => { 
+  var lineItems = [];
+
+  try {
+    lineItems = createLineItems(items);
+  }
+  catch (err) {
+    reportError(err);
+    
+    lineItems = [{
         quantity: 1,
         price_data: {
           currency: "usd",
@@ -55,39 +96,23 @@ exports.createStripeCheckoutForUser = functions.https.onCall(async (userId, cont
             name: "New camera",
           },
         },
-      },
-    ],
-  });
+    }];
+  }
 
-  return {
-    id: session.id,
-  };
-});
-
-exports.createAnonymousStripeCheckout = functions.https.onCall(async (cart, context) => {
   const session = await _stripe.checkout.sessions.create({
     payment_method_types: ["card"],
     mode: "payment",
-    success_url: "http://localhost:3000/auth/success",
-    cancel_url: "http://localhost:3000/auth/cancel",
-    line_items: [
-      {
-        quantity: 1,
-        price_data: {
-          currency: "usd",
-          unit_amount: (100) * 100, // 10000 = 100 USD
-          product_data: {
-            name: "New camera",
-          },
-        },
-      },
-    ],
-  });
+    customer_email: email,
+    success_url: "http://localhost:3000/checkout/success",
+    cancel_url: "http://localhost:3000/checkout/cancel",
+    line_items: lineItems
+    });
 
   return {
     id: session.id,
   };
 });
+
 
 
 

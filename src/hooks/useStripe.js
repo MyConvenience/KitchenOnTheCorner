@@ -7,7 +7,11 @@ const useStripe = (activeOnly) => {
   const [stripe, setStripe] = useState(null);
   const [checkoutSession, setCheckoutSession] = useState(null);
   
-  const createCheckout = async (args) => setCheckoutSession(await firebase.createStripeCheckout(args));
+  const createCheckout = async (args) => {
+    const sesh = await firebase.createStripeCheckout(args);
+    setCheckoutSession(sesh);
+    return sesh;
+  }
 
   const clearSession = () => setCheckoutSession(null);
 
